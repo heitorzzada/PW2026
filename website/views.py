@@ -8,6 +8,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Sum, Avg, Count
 from datetime import date, datetime, timedelta
+from django.db.models import Q
 
 from .models import (
     PerfilUsuario, Servico, Barbeiro, Cliente,
@@ -701,6 +702,18 @@ class ClienteListView(AdminRequiredMixin, ListView):
     model = Cliente
     template_name = "website/listas/clientes.html"
     context_object_name = "clientes"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        busca = self.request.GET.get("q")
+
+        if busca:
+            queryset = queryset.filter(
+                Q(nome__icontains=busca) |
+                Q(email__icontains=busca)
+            )
+
+        return queryset
 
 class ClienteDetailView(AdminRequiredMixin, DetailView):
     model = Cliente
