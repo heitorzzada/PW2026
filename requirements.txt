@@ -2,3 +2,8 @@ Django
 django-crispy-forms
 crispy-bootstrap5
 Pillow
+django-debug-toolbar
+dj-database-url
+psycopg2-binary
+python-dotenv
+

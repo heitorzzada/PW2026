@@ -89,6 +89,9 @@ class CadastroUsuarioForm(forms.Form):
             first_name=cleaned_data["nome"],
             last_name=cleaned_data["sobrenome"],
         )
+        from django.contrib.auth.models import Group
+        grupo_cliente, _ = Group.objects.get_or_create(name="Clientes")
+        user.groups.add(grupo_cliente)
         
         PerfilUsuario.objects.create(
             usuario=user,

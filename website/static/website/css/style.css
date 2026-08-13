@@ -7,7 +7,7 @@
     --accent-green: #22c55e;
     --accent-green-hover: #16a34a;
     --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
+    --text-secondary: #fde047;
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
@@ -289,3 +289,16 @@ label {
     background: rgba(34, 197, 94, 0.1);
     color: var(--accent-green);
 }
+
+/* Global Font Color Overrides for Previously Gray Text Elements */
+.text-muted,
+.text-secondary,
+.text-black-50,
+.text-white-50,
+p.text-muted,
+small.text-muted,
+span.text-muted,
+div.text-muted {
+    color: #fde047 !important;
+}
+

@@ -6,9 +6,9 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Sum, Avg, Count
+from django.contrib.auth.models import Group
+from django.db.models import Sum, Avg, Count, Q
 from datetime import date, datetime, timedelta
-from django.db.models import Q
 
 from .models import (
     PerfilUsuario, Servico, Barbeiro, Cliente,
@@ -24,25 +24,90 @@ from .forms import (
 
 # --- SECURITY MIXINS ---
 
+class GroupRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    group_required = None
+
+    def get_group_required(self):
+        return self.group_required
+
+    def test_func(self):
+        if not self.request.user.is_authenticated:
+            return False
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return True
+        groups = self.get_group_required()
+        if groups:
+            if isinstance(groups, str):
+                groups = [groups]
+            if self.request.user.groups.filter(name__in=groups).exists():
+                return True
+            perfil_tipo = getattr(getattr(self.request.user, "perfil", None), "tipo_usuario", None)
+            if "Administradores" in groups and (self.request.user.is_staff or perfil_tipo == "administrador"):
+                return True
+            if "Barbeiros" in groups and perfil_tipo == "barbeiro":
+                return True
+            if "Clientes" in groups and perfil_tipo == "cliente":
+                return True
+            return False
+        return True
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        messages.error(self.request, "Acesso não permitido para o seu perfil de usuário. 🛑")
+        return redirect("redirecionar_usuario")
+
+
 class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.is_authenticated and (self.request.user.is_staff or self.request.user.is_superuser)
+        if not self.request.user.is_authenticated:
+            return False
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return True
+        if hasattr(self.request.user, "perfil") and self.request.user.perfil.tipo_usuario == "administrador":
+            return True
+        return self.request.user.groups.filter(name="Administradores").exists()
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        messages.error(self.request, "Acesso exclusivo para administradores. 🛑")
+        return redirect("redirecionar_usuario")
+
 
 class ClienteRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
-        return (
-            self.request.user.is_authenticated and 
-            hasattr(self.request.user, "perfil") and 
-            self.request.user.perfil.tipo_usuario == "cliente"
-        )
+        if not self.request.user.is_authenticated:
+            return False
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return True
+        if hasattr(self.request.user, "perfil") and self.request.user.perfil.tipo_usuario in ["cliente", "administrador"]:
+            return True
+        return self.request.user.groups.filter(name="Clientes").exists()
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        messages.error(self.request, "Área restrita aos clientes. 🛑")
+        return redirect("redirecionar_usuario")
+
 
 class BarbeiroRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
-        return (
-            self.request.user.is_authenticated and 
-            hasattr(self.request.user, "perfil") and 
-            self.request.user.perfil.tipo_usuario == "barbeiro"
-        )
+        if not self.request.user.is_authenticated:
+            return False
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return True
+        if hasattr(self.request.user, "perfil") and self.request.user.perfil.tipo_usuario in ["barbeiro", "administrador"]:
+            return True
+        return self.request.user.groups.filter(name="Barbeiros").exists()
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        messages.error(self.request, "Área restrita aos barbeiros. 🛑")
+        return redirect("redirecionar_usuario")
+
 
 
 # --- PUBLIC VIEWS ---
@@ -54,7 +119,7 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["servicos_destaque"] = Servico.objects.filter(ativo=True, destaque=True).order_by("ordem")
         context["barbeiros"] = Barbeiro.objects.filter(ativo=True)
-        context["fotos_trabalho"] = FotoTrabalho.objects.filter(publicado=True).order_by("-criado_em")
+        context["fotos_trabalho"] = FotoTrabalho.objects.select_related("barbeiro").filter(publicado=True).order_by("-criado_em")
         return context
 
 
@@ -62,6 +127,7 @@ class ServicosPublicView(ListView):
     model = Servico
     template_name = "website/servicos.html"
     context_object_name = "servicos"
+    paginate_by = 10
 
     def get_queryset(self):
         return Servico.objects.filter(ativo=True).order_by("ordem")
@@ -71,9 +137,10 @@ class BarbeirosPublicView(ListView):
     model = Barbeiro
     template_name = "website/barbeiros.html"
     context_object_name = "barbeiros"
+    paginate_by = 10
 
     def get_queryset(self):
-        return Barbeiro.objects.filter(ativo=True)
+        return Barbeiro.objects.filter(ativo=True).order_by("nome")
 
 
 class SobreView(TemplateView):
@@ -211,7 +278,7 @@ class CustomLoginView(LoginView):
 class CustomLogoutView(LogoutView):
     next_page = "pagina_inicial"
 
-class CustomPasswordChangeView(PasswordChangeView):
+class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = "registration/alterar_senha.html"
     success_url = reverse_lazy("redirecionar_usuario")
 
@@ -289,11 +356,15 @@ class AreaClienteView(ClienteRequiredMixin, TemplateView):
         cliente = Cliente.objects.filter(usuario=self.request.user).first()
         if cliente:
             context["cliente"] = cliente
-            context["proximos_agendamentos"] = Agendamento.objects.filter(
+            context["proximos_agendamentos"] = Agendamento.objects.select_related(
+                "servico", "barbeiro"
+            ).filter(
                 cliente=cliente,
                 status__in=["pendente", "confirmado"]
             ).order_by("data", "horario")
-            context["ultimo_agendamento"] = Agendamento.objects.filter(
+            context["ultimo_agendamento"] = Agendamento.objects.select_related(
+                "servico", "barbeiro"
+            ).filter(
                 cliente=cliente,
                 status="concluido"
             ).order_by("-data", "-horario").first()
@@ -304,11 +375,14 @@ class HistoricoClienteView(ClienteRequiredMixin, ListView):
     model = Agendamento
     template_name = "website/cliente/historico_cliente.html"
     context_object_name = "agendamentos"
+    paginate_by = 10
 
     def get_queryset(self):
         cliente = Cliente.objects.filter(usuario=self.request.user).first()
         if cliente:
-            return Agendamento.objects.filter(cliente=cliente).order_by("-data", "-horario")
+            return Agendamento.objects.select_related(
+                "servico", "barbeiro"
+            ).filter(cliente=cliente).order_by("-data", "-horario")
         return Agendamento.objects.none()
 
 
@@ -352,6 +426,9 @@ class PerfilClienteUpdateView(ClienteRequiredMixin, UpdateView):
     template_name = "website/cliente/perfil_cliente.html"
     success_url = reverse_lazy("area_cliente")
 
+    def get_queryset(self):
+        return Cliente.objects.filter(usuario=self.request.user)
+
     def get_object(self, queryset=None):
         return Cliente.objects.filter(usuario=self.request.user).first()
 
@@ -383,12 +460,18 @@ class AreaBarbeiroView(BarbeiroRequiredMixin, TemplateView):
         barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
         if barbeiro:
             context["barbeiro"] = barbeiro
-            context["proximos_agendamentos"] = Agendamento.objects.filter(
+            context["proximos_agendamentos"] = Agendamento.objects.select_related(
+                "cliente", "servico"
+            ).filter(
                 barbeiro=barbeiro,
                 status__in=["pendente", "confirmado"]
             ).order_by("data", "horario")[:5]
-            context["feedbacks"] = Feedback.objects.filter(barbeiro=barbeiro).order_by("-criado_em")[:5]
-            context["fotos"] = FotoTrabalho.objects.filter(barbeiro=barbeiro).order_by("-criado_em")[:4]
+            context["feedbacks"] = Feedback.objects.select_related(
+                "cliente"
+            ).filter(barbeiro=barbeiro).order_by("-criado_em")[:5]
+            context["fotos"] = FotoTrabalho.objects.select_related(
+                "barbeiro"
+            ).filter(barbeiro=barbeiro).order_by("-criado_em")[:4]
         return context
 
 
@@ -399,7 +482,9 @@ class AgendamentosBarbeiroView(BarbeiroRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
         if barbeiro:
-            context["agendamentos"] = Agendamento.objects.filter(
+            context["agendamentos"] = Agendamento.objects.select_related(
+                "cliente", "servico"
+            ).filter(
                 barbeiro=barbeiro
             ).order_by("data", "horario")
         return context
@@ -424,16 +509,20 @@ class HistoricoBarbeiroView(BarbeiroRequiredMixin, ListView):
     model = Agendamento
     template_name = "website/barbeiro/historico_barbeiro.html"
     context_object_name = "agendamentos"
+    paginate_by = 10
 
     def get_queryset(self):
         barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
         if barbeiro:
-            return Agendamento.objects.filter(barbeiro=barbeiro, status="concluido").order_by("-data", "-horario")
+            return Agendamento.objects.select_related(
+                "cliente", "servico"
+            ).filter(barbeiro=barbeiro, status="concluido").order_by("-data", "-horario")
         return Agendamento.objects.none()
 
 
-class RelatoriosBarbeiroView(BarbeiroRequiredMixin, TemplateView):
+class RelatoriosBarbeiroView(GroupRequiredMixin, BarbeiroRequiredMixin, TemplateView):
     template_name = "website/barbeiro/relatorios_barbeiro.html"
+    group_required = "Barbeiros"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -459,8 +548,8 @@ class RelatoriosBarbeiroView(BarbeiroRequiredMixin, TemplateView):
             media_nota = feedbacks.aggregate(media=Avg("nota"))["media"] or 0
             
             servicos_populares = Agendamento.objects.filter(
-                barbeiro=barbeiro, status="concluido"
-            ).values("servico__nome").annotate(total=Count("id")).order_by("-total")[:3]
+                barbeiro=barbeiro
+            ).exclude(status="cancelado").values("servico__nome").annotate(total=Count("id")).order_by("-total")[:3]
             
             clientes_atendidos = Agendamento.objects.filter(
                 barbeiro=barbeiro, status="concluido"
@@ -482,11 +571,14 @@ class FotosBarbeiroListView(BarbeiroRequiredMixin, ListView):
     model = FotoTrabalho
     template_name = "website/barbeiro/fotos_barbeiro.html"
     context_object_name = "fotos"
+    paginate_by = 10
 
     def get_queryset(self):
         barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
         if barbeiro:
-            return FotoTrabalho.objects.filter(barbeiro=barbeiro).order_by("-criado_em")
+            return FotoTrabalho.objects.select_related(
+                "barbeiro"
+            ).filter(barbeiro=barbeiro).order_by("-criado_em")
         return FotoTrabalho.objects.none()
 
 
@@ -552,23 +644,40 @@ class FotoTrabalhoDeleteView(BarbeiroRequiredMixin, DeleteView):
 
 # --- ADMIN DASHBOARD ---
 
-class DashboardView(AdminRequiredMixin, TemplateView):
+class DashboardView(GroupRequiredMixin, AdminRequiredMixin, TemplateView):
     template_name = "website/dashboard.html"
+    group_required = "Administradores"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         today = date.today()
-        agendamentos_hoje = Agendamento.objects.filter(data=today)
+        agendamentos = Agendamento.objects.all()
+        agendamentos_hoje = agendamentos.filter(data=today)
         
+        faturamento_estimado = agendamentos_hoje.exclude(
+            status="cancelado"
+        ).aggregate(total=Sum("servico__preco"))["total"] or 0
+
+        servicos_populares = agendamentos.exclude(
+            status="cancelado"
+        ).values("servico__nome").annotate(total=Count("id")).order_by("-total")[:5]
+
+        media_satisfacao = Feedback.objects.aggregate(media=Avg("nota"))["media"] or 0
+
+
+        ultimos_agendamentos = agendamentos.select_related(
+            "cliente", "servico", "barbeiro"
+        ).order_by("-criado_em")[:10]
+
         context.update({
             "agendamentos_hoje": agendamentos_hoje.count(),
-            "pendentes": Agendamento.objects.filter(status="pendente").count(),
-            "confirmados": Agendamento.objects.filter(status="confirmado").count(),
-            "concluidos": Agendamento.objects.filter(status="concluido").count(),
-            "faturamento_estimado": Agendamento.objects.filter(
-                data=today, status__in=["confirmado", "concluido"]
-            ).aggregate(total=Sum("servico__preco"))["total"] or 0,
-            "ultimos_agendamentos": Agendamento.objects.all().order_by("-criado_em")[:10],
+            "pendentes": agendamentos.filter(status="pendente").count(),
+            "confirmados": agendamentos.filter(status="confirmado").count(),
+            "concluidos": agendamentos.filter(status="concluido").count(),
+            "faturamento_estimado": faturamento_estimado,
+            "servicos_populares": servicos_populares,
+            "media_satisfacao": round(media_satisfacao, 1) if media_satisfacao else 0,
+            "ultimos_agendamentos": ultimos_agendamentos,
         })
         return context
 
@@ -595,6 +704,9 @@ class ServicoUpdateView(AdminRequiredMixin, UpdateView):
     success_url = reverse_lazy("listar_servicos")
     extra_context = {"titulo": "Editar Serviço", "botao": "Salvar Alterações"}
 
+    def get_queryset(self):
+        return Servico.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Serviço atualizado com sucesso! ✅")
         return super().form_valid(form)
@@ -605,6 +717,9 @@ class ServicoDeleteView(AdminRequiredMixin, DeleteView):
     success_url = reverse_lazy("listar_servicos")
     extra_context = {"titulo": "Excluir Serviço", "botao": "Excluir"}
 
+    def get_queryset(self):
+        return Servico.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Serviço excluído com sucesso! ✅")
         return super().form_valid(form)
@@ -613,11 +728,17 @@ class ServicoListView(AdminRequiredMixin, ListView):
     model = Servico
     template_name = "website/listas/servicos.html"
     context_object_name = "servicos"
-    queryset = Servico.objects.all().order_by("ordem")
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Servico.objects.filter(usuario=self.request.user).order_by("ordem")
 
 class ServicoDetailView(AdminRequiredMixin, DetailView):
     model = Servico
     template_name = "website/ver/servico.html"
+
+    def get_queryset(self):
+        return Servico.objects.filter(usuario=self.request.user)
 
 
 # Barbeiro CRUD
@@ -640,6 +761,9 @@ class BarbeiroUpdateView(AdminRequiredMixin, UpdateView):
     success_url = reverse_lazy("listar_barbeiros")
     extra_context = {"titulo": "Editar Barbeiro", "botao": "Salvar Alterações"}
 
+    def get_queryset(self):
+        return Barbeiro.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Barbeiro atualizado com sucesso! ✅")
         return super().form_valid(form)
@@ -650,6 +774,9 @@ class BarbeiroDeleteView(AdminRequiredMixin, DeleteView):
     success_url = reverse_lazy("listar_barbeiros")
     extra_context = {"titulo": "Excluir Barbeiro", "botao": "Excluir"}
 
+    def get_queryset(self):
+        return Barbeiro.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Barbeiro excluído com sucesso! ✅")
         return super().form_valid(form)
@@ -658,10 +785,17 @@ class BarbeiroListView(AdminRequiredMixin, ListView):
     model = Barbeiro
     template_name = "website/listas/barbeiros.html"
     context_object_name = "barbeiros"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Barbeiro.objects.filter(usuario=self.request.user).order_by("nome")
 
 class BarbeiroDetailView(AdminRequiredMixin, DetailView):
     model = Barbeiro
     template_name = "website/ver/barbeiro.html"
+
+    def get_queryset(self):
+        return Barbeiro.objects.filter(usuario=self.request.user)
 
 
 # Cliente CRUD
@@ -684,6 +818,9 @@ class ClienteUpdateView(AdminRequiredMixin, UpdateView):
     success_url = reverse_lazy("listar_clientes")
     extra_context = {"titulo": "Editar Cliente", "botao": "Salvar Alterações"}
 
+    def get_queryset(self):
+        return Cliente.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Cliente atualizado com sucesso! ✅")
         return super().form_valid(form)
@@ -694,6 +831,9 @@ class ClienteDeleteView(AdminRequiredMixin, DeleteView):
     success_url = reverse_lazy("listar_clientes")
     extra_context = {"titulo": "Excluir Cliente", "botao": "Excluir"}
 
+    def get_queryset(self):
+        return Cliente.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Cliente excluído com sucesso! ✅")
         return super().form_valid(form)
@@ -702,9 +842,10 @@ class ClienteListView(AdminRequiredMixin, ListView):
     model = Cliente
     template_name = "website/listas/clientes.html"
     context_object_name = "clientes"
+    paginate_by = 10
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = Cliente.objects.filter(usuario=self.request.user)
         busca = self.request.GET.get("q")
 
         if busca:
@@ -713,11 +854,14 @@ class ClienteListView(AdminRequiredMixin, ListView):
                 Q(email__icontains=busca)
             )
 
-        return queryset
+        return queryset.order_by("nome")
 
 class ClienteDetailView(AdminRequiredMixin, DetailView):
     model = Cliente
     template_name = "website/ver/cliente.html"
+
+    def get_queryset(self):
+        return Cliente.objects.filter(usuario=self.request.user)
 
 
 # HorarioDisponivel CRUD
@@ -740,6 +884,9 @@ class HorarioDisponivelUpdateView(AdminRequiredMixin, UpdateView):
     success_url = reverse_lazy("listar_horarios")
     extra_context = {"titulo": "Editar Horário Disponível", "botao": "Salvar Alterações"}
 
+    def get_queryset(self):
+        return HorarioDisponivel.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Horário atualizado com sucesso! ✅")
         return super().form_valid(form)
@@ -750,6 +897,9 @@ class HorarioDisponivelDeleteView(AdminRequiredMixin, DeleteView):
     success_url = reverse_lazy("listar_horarios")
     extra_context = {"titulo": "Excluir Horário Disponível", "botao": "Excluir"}
 
+    def get_queryset(self):
+        return HorarioDisponivel.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Horário excluído com sucesso! ✅")
         return super().form_valid(form)
@@ -758,10 +908,17 @@ class HorarioDisponivelListView(AdminRequiredMixin, ListView):
     model = HorarioDisponivel
     template_name = "website/listas/horarios.html"
     context_object_name = "horarios"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return HorarioDisponivel.objects.select_related("barbeiro").filter(usuario=self.request.user).order_by("barbeiro__nome", "horario")
 
 class HorarioDisponivelDetailView(AdminRequiredMixin, DetailView):
     model = HorarioDisponivel
     template_name = "website/ver/horario.html"
+
+    def get_queryset(self):
+        return HorarioDisponivel.objects.filter(usuario=self.request.user)
 
 
 # Agendamento CRUD
@@ -773,7 +930,6 @@ class AgendamentoCreateView(AdminRequiredMixin, CreateView):
     extra_context = {"titulo": "Cadastrar Agendamento", "botao": "Cadastrar"}
 
     def form_valid(self, form):
-        # Prevent double booking for same barber, date, and time
         barbeiro = form.cleaned_data["barbeiro"]
         data = form.cleaned_data["data"]
         horario = form.cleaned_data["horario"]
@@ -792,6 +948,9 @@ class AgendamentoUpdateView(AdminRequiredMixin, UpdateView):
     success_url = reverse_lazy("listar_agendamentos")
     extra_context = {"titulo": "Editar Agendamento", "botao": "Salvar Alterações"}
 
+    def get_queryset(self):
+        return Agendamento.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Agendamento atualizado com sucesso! ✅")
         return super().form_valid(form)
@@ -802,19 +961,29 @@ class AgendamentoDeleteView(AdminRequiredMixin, DeleteView):
     success_url = reverse_lazy("listar_agendamentos")
     extra_context = {"titulo": "Excluir Agendamento", "botao": "Excluir"}
 
+    def get_queryset(self):
+        return Agendamento.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Agendamento excluído com sucesso! ✅")
         return super().form_valid(form)
 
-class AgendamentoListView(AdminRequiredMixin, ListView):
+class AgendamentoListView(GroupRequiredMixin, AdminRequiredMixin, ListView):
     model = Agendamento
     template_name = "website/listas/agendamentos.html"
     context_object_name = "agendamentos"
-    queryset = Agendamento.objects.all().order_by("-data", "-horario")
+    paginate_by = 10
+    group_required = "Administradores"
+
+    def get_queryset(self):
+        return Agendamento.objects.select_related("cliente", "servico", "barbeiro").filter(usuario=self.request.user).order_by("-data", "-horario")
 
 class AgendamentoDetailView(AdminRequiredMixin, DetailView):
     model = Agendamento
     template_name = "website/ver/agendamento.html"
+
+    def get_queryset(self):
+        return Agendamento.objects.filter(usuario=self.request.user)
 
 
 # MensagemContato CRUD
@@ -822,11 +991,17 @@ class MensagemContatoListView(AdminRequiredMixin, ListView):
     model = MensagemContato
     template_name = "website/listas/mensagens.html"
     context_object_name = "mensagens"
-    queryset = MensagemContato.objects.all().order_by("-enviada_em")
+    paginate_by = 10
+
+    def get_queryset(self):
+        return MensagemContato.objects.filter(usuario=self.request.user).order_by("-enviada_em")
 
 class MensagemContatoDetailView(AdminRequiredMixin, DetailView):
     model = MensagemContato
     template_name = "website/ver/mensagem.html"
+
+    def get_queryset(self):
+        return MensagemContato.objects.filter(usuario=self.request.user)
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -841,6 +1016,9 @@ class MensagemContatoDeleteView(AdminRequiredMixin, DeleteView):
     success_url = reverse_lazy("listar_mensagens")
     extra_context = {"titulo": "Excluir Mensagem de Contato", "botao": "Excluir"}
 
+    def get_queryset(self):
+        return MensagemContato.objects.filter(usuario=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, "Mensagem excluída com sucesso! ✅")
         return super().form_valid(form)
@@ -851,17 +1029,26 @@ class FeedbackListView(AdminRequiredMixin, ListView):
     model = Feedback
     template_name = "website/listas/feedbacks.html"
     context_object_name = "feedbacks"
-    queryset = Feedback.objects.all().order_by("-criado_em")
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Feedback.objects.select_related("cliente", "barbeiro", "agendamento").filter(usuario=self.request.user).order_by("-criado_em")
 
 class FeedbackDetailView(AdminRequiredMixin, DetailView):
     model = Feedback
     template_name = "website/ver/feedback.html"
+
+    def get_queryset(self):
+        return Feedback.objects.filter(usuario=self.request.user)
 
 class FeedbackDeleteView(AdminRequiredMixin, DeleteView):
     model = Feedback
     template_name = "website/excluir.html"
     success_url = reverse_lazy("listar_feedbacks")
     extra_context = {"titulo": "Excluir Feedback", "botao": "Excluir"}
+
+    def get_queryset(self):
+        return Feedback.objects.filter(usuario=self.request.user)
 
     def form_valid(self, form):
         messages.success(self.request, "Feedback excluído com sucesso! ✅")
@@ -873,7 +1060,14 @@ class FotoTrabalhoListView(AdminRequiredMixin, ListView):
     model = FotoTrabalho
     template_name = "website/listas/fotos.html"
     context_object_name = "fotos"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return FotoTrabalho.objects.select_related("barbeiro").filter(usuario=self.request.user).order_by("-criado_em")
 
 class FotoTrabalhoDetailView(AdminRequiredMixin, DetailView):
     model = FotoTrabalho
     template_name = "website/ver/foto.html"
+
+    def get_queryset(self):
+        return FotoTrabalho.objects.filter(usuario=self.request.user)

@@ -157,6 +157,7 @@ class Command(BaseCommand):
             serv, created = Servico.objects.get_or_create(
                 nome=sdata["nome"],
                 defaults={
+                    "usuario": admin_user,
                     "descricao": sdata["descricao"],
                     "preco": sdata["preco"],
                     "duracao_minutos": sdata["duracao"],
@@ -188,7 +189,7 @@ class Command(BaseCommand):
                 hd, created = HorarioDisponivel.objects.get_or_create(
                     barbeiro=barbeiro,
                     horario=t,
-                    defaults={"ativo": True}
+                    defaults={"usuario": admin_user, "ativo": True}
                 )
                 if created:
                     count += 1

@@ -81,6 +81,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'fotos_barbeiro' %}">Minhas Fotos</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'alterar_senha' %}"><i class="bi bi-key"></i> Senha</a>
+                            </li>
                             <li class="nav-item ms-lg-2">
                                 <form method="post" action="{% url 'logout' %}" class="d-inline">
                                     {% csrf_token %}
@@ -109,6 +112,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'historico_cliente' %}">Meu Histórico</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'alterar_senha' %}"><i class="bi bi-key"></i> Senha</a>
                             </li>
                             <li class="nav-item ms-lg-2">
                                 <form method="post" action="{% url 'logout' %}" class="d-inline">

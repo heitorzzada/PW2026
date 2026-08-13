@@ -26,7 +26,7 @@ body {
 }
 
 .navbar a {
-    color: #cbd5f5;
+    color: #fde047;
     text-decoration: none;
     margin-left: 20px;
     transition: 0.3s;
@@ -52,7 +52,7 @@ body {
 }
 
 .hero p {
-    color: #94a3b8;
+    color: #fde047;
     margin-bottom: 20px;
 }
 
@@ -111,7 +111,7 @@ footer {
     text-align: center;
     padding: 20px;
     background: #020617;
-    color: #94a3b8;
+    color: #fde047;
 }
 
 .servicos {

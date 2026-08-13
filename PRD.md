@@ -52,7 +52,8 @@ O sistema contempla:
 - Uso de Bootstrap 5 para responsividade.
 - Uso de jQuery para manipulação dinâmica da interface.
 - Segurança através de autenticação Django.
-- Persistência em banco de dados relacional.
+- Persistência em banco de dados relacional PostgreSQL (Neon Serverless DB).
+- Paleta visual customizada com destaque em Dourado/Âmbar (#fde047) para elementos secundários.
 
 ## Casos de Uso
 - **CU01 - Realizar Agendamento**: Cliente seleciona barbeiro, serviço e horário disponível; sistema valida e salva.
