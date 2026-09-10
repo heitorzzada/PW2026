@@ -42,8 +42,10 @@ O objetivo deste sistema é automatizar a gestão de uma barbearia, facilitando 
 - **Models**: Localizados em `website/models.py`.
 - **Views**: Localizadas em `website/views.py`.
 - **Forms**: Localizados em `website/forms.py`.
+- **Pix Utility**: Localizado em `website/pix.py`.
+- **Commands**: Localizados em `website/management/commands/` (ex: `seed_delacruz_real.py`).
 - **URLs**: Divididas entre `BarberProject/urls.py` (root) e `website/urls.py` (app).
-- **Templates**: Organizados em `website/templates/website/` (agrupados por funcionalidade: `cliente/`, `barbeiro/`, `registration/`, `listas/`, `ver/`).
+- **Templates**: Organizados em `website/templates/website/` (agrupados por funcionalidade: `cliente/`, `barbeiro/`, `salao/`, `clube/`, `registration/`, `listas/`, `ver/`).
 
 ## Migrations
 - Para criar migrations após alteração de models: `python manage.py makemigrations`
@@ -52,10 +54,11 @@ O objetivo deste sistema é automatizar a gestão de uma barbearia, facilitando 
 ## Como Executar o Projeto
 1. Instale as dependências: `pip install -r requirements.txt`
 2. Aplique as migrações: `python manage.py migrate`
-3. Execute o servidor: `python manage.py runserver`
+3. Sincronize o catálogo oficial: `python manage.py seed_delacruz_real`
+4. Execute o servidor: `python manage.py runserver`
 
 ## Como Executar Testes
-- Execute os testes padrão do Django: `python manage.py test`
+- Execute os testes padrão do Django: `python manage.py test` (ou `python manage.py test website --keepdb`)
 
 ## Convenções para Commits Git
 - Utilize mensagens claras e concisas seguindo o formato: `tipo: descrição breve da alteração`

@@ -79,6 +79,9 @@
                                 <a class="nav-link" href="{% url 'relatorios_barbeiro' %}">Relatórios</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="{% url 'bloqueios_barbeiro' %}"><i class="bi bi-calendar-x"></i> Folgas</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="{% url 'fotos_barbeiro' %}">Minhas Fotos</a>
                             </li>
                             <li class="nav-item">
@@ -103,6 +106,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-warning fw-bold" href="{% url 'clube_planos' %}"><i class="bi bi-crown-fill"></i> Clube VIP</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'agendamento' %}">Agendamento</a>
@@ -136,6 +142,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'barbeiros' %}">Barbeiros</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-warning fw-bold" href="{% url 'clube_planos' %}"><i class="bi bi-crown-fill"></i> Clube VIP</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'sobre' %}">Sobre</a>
@@ -184,7 +193,12 @@
     <footer class="footer mt-auto py-4 text-center">
         <div class="container">
             <p class="mb-1 text-white">💈 <strong>Delacruz Barber</strong> - Estilo e Tradição</p>
-            <p class="text-muted small mb-0">&copy; 2026 Delacruz Barber. Todos os direitos reservados.</p>
+            <p class="text-muted small mb-2">&copy; 2026 Delacruz Barber. Todos os direitos reservados.</p>
+            <p class="small mb-0">
+                <a href="{% url 'painel_tv' %}" target="_blank" class="text-secondary text-decoration-none">
+                    <i class="bi bi-tv"></i> Painel TV da Recepção
+                </a>
+            </p>
         </div>
     </footer>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

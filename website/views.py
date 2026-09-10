@@ -13,14 +13,21 @@ from datetime import date, datetime, timedelta
 from .models import (
     PerfilUsuario, Servico, Barbeiro, Cliente,
     HorarioDisponivel, Agendamento, MensagemContato,
-    Feedback, FotoTrabalho
+    Feedback, FotoTrabalho, CupomDesconto, Produto,
+    VendaProduto, ComissaoBarbeiro, PagamentoPix,
+    CartaoFidelidade, MovimentacaoFidelidade, NotificacaoLog,
+    BloqueioHorarioBarbeiro, FichaCliente, FilaEspera,
+    PlanoAssinatura, AssinaturaCliente, ItemAgendamento
 )
 from .forms import (
     CadastroUsuarioForm, PerfilUsuarioForm, ServicoForm,
     BarbeiroForm, ClienteForm, HorarioDisponivelForm,
     AgendamentoForm, AgendamentoPublicoForm, MensagemContatoForm,
-    FeedbackForm, FotoTrabalhoForm, PerfilClienteForm
+    FeedbackForm, FotoTrabalhoForm, PerfilClienteForm,
+    BloqueioHorarioForm, FichaClienteForm, FilaEsperaForm,
+    VendaProdutoRapidaForm, CupomDescontoForm, PlanoAssinaturaForm
 )
+from .pix import gerar_payload_pix, gerar_url_qrcode_pix
 
 # --- SECURITY MIXINS ---
 
@@ -220,24 +227,132 @@ class AgendamentoPublicoView(FormView):
         barbeiro = cleaned_data["barbeiro"]
         data = cleaned_data["data"]
         horario = cleaned_data["horario"]
+        servico = cleaned_data["servico"]
+        metodo_pagamento = cleaned_data.get("metodo_pagamento", "pix")
+        cupom_codigo = cleaned_data.get("cupom_codigo", "").strip().upper()
         
-        # Double check availability on backend
-        if Agendamento.objects.filter(barbeiro=barbeiro, data=data, horario=horario).exclude(status="cancelado").exists():
-            form.add_error("horario", "Este horário já está reservado para este barbeiro.")
+        # Validação de disponibilidade com duração real e buffer de 5 minutos
+        duracao_atendimento = servico.duracao_minutos or 30
+        buffer_minutos = 5
+        cand_inicio_dt = datetime.combine(data, horario)
+        cand_fim_ocupado_dt = cand_inicio_dt + timedelta(minutes=duracao_atendimento + buffer_minutos)
+        cand_horario_fim = (cand_inicio_dt + timedelta(minutes=duracao_atendimento)).time()
+
+        if BloqueioHorarioBarbeiro.objects.filter(barbeiro=barbeiro, data=data, dia_inteiro=True).exists():
+            form.add_error("data", "Este barbeiro está de folga nesta data.")
             return self.form_invalid(form)
-            
-        Agendamento.objects.create(
+
+        # Colisão de intervalos semiabertos contra agendamentos existentes
+        agendamentos_existentes = Agendamento.objects.filter(
+            barbeiro=barbeiro, data=data
+        ).exclude(status="cancelado")
+
+        for ag in agendamentos_existentes:
+            dur_ag = ag.duracao_total_minutos or (ag.servico.duracao_minutos if ag.servico else 30)
+            ag_inicio_dt = datetime.combine(data, ag.horario)
+            ag_fim_ocupado_dt = ag_inicio_dt + timedelta(minutes=dur_ag + buffer_minutos)
+            if cand_inicio_dt < ag_fim_ocupado_dt and cand_fim_ocupado_dt > ag_inicio_dt:
+                form.add_error("horario", f"Este horário colide com outro agendamento (iniciado às {ag.horario.strftime('%H:%M')}).")
+                return self.form_invalid(form)
+
+        # Colisão com bloqueios pontuais do barbeiro
+        bloqueios = BloqueioHorarioBarbeiro.objects.filter(
+            barbeiro=barbeiro, data=data, dia_inteiro=False, horario__isnull=False
+        )
+        for bl in bloqueios:
+            bl_inicio_dt = datetime.combine(data, bl.horario)
+            bl_fim_ocupado_dt = bl_inicio_dt + timedelta(minutes=30 + buffer_minutos)
+            if cand_inicio_dt < bl_fim_ocupado_dt and cand_fim_ocupado_dt > bl_inicio_dt:
+                form.add_error("horario", f"Horário bloqueado pelo barbeiro ({bl.motivo}).")
+                return self.form_invalid(form)
+
+        preco_base = float(servico.preco)
+        desconto = 0.0
+        cupom_encontrado = None
+
+        # 1. Verifica Assinatura Ativa (Clube Delacruz)
+        assinatura = AssinaturaCliente.objects.filter(cliente=cliente, status="ativa").first()
+        coberto_por_assinatura = False
+        if assinatura and assinatura.tem_cortes_disponiveis():
+            desconto = preco_base
+            assinatura.cortes_usados_mes += 1
+            assinatura.save()
+            coberto_por_assinatura = True
+
+        # 2. Verifica Cupom de Desconto ou Código de Amigo (se não coberto pela assinatura)
+        elif cupom_codigo:
+            cupom = CupomDesconto.objects.filter(codigo__iexact=cupom_codigo, ativo=True).first()
+            if cupom and cupom.is_valido():
+                desconto = float(cupom.calcular_desconto(preco_base))
+                cupom.usado_vezes += 1
+                cupom.save()
+                cupom_encontrado = cupom
+            else:
+                # Código de Indicação de Amigo
+                amigo = Cliente.objects.filter(codigo_indicacao__iexact=cupom_codigo).exclude(id=cliente.id).first()
+                if amigo:
+                    desconto = min(10.0, preco_base)
+                    amigo.saldo_creditos = float(amigo.saldo_creditos) + 10.0
+                    amigo.save()
+                    messages.info(self.request, f"Código de indicação do(a) {amigo.nome} aplicado! R$ 10,00 de desconto. 🎁")
+
+        valor_final = max(round(preco_base - desconto, 2), 0.0)
+
+        agendamento = Agendamento.objects.create(
             usuario=self.request.user if self.request.user.is_authenticated else None,
             cliente=cliente,
-            servico=cleaned_data["servico"],
+            servico=servico,
             barbeiro=barbeiro,
             data=data,
             horario=horario,
-            status="pendente",
-            observacoes=cleaned_data["observacoes"],
+            horario_fim=cand_horario_fim,
+            duracao_total_minutos=duracao_atendimento,
+            status="confirmado" if coberto_por_assinatura else "pendente",
+            valor_total=preco_base,
+            desconto_aplicado=desconto,
+            cupom=cupom_encontrado,
+            metodo_pagamento=metodo_pagamento,
+            status_pagamento="pago" if coberto_por_assinatura else "pendente",
+            observacoes=cleaned_data.get("observacoes"),
         )
-        
-        messages.success(self.request, "Seu agendamento foi solicitado com sucesso! Acompanhe em sua área. ✅")
+        agendamento.servicos.add(servico)
+
+        # Snapshot de ItemAgendamento
+        ItemAgendamento.objects.create(
+            agendamento=agendamento,
+            servico=servico,
+            preco_unitario=servico.preco,
+            duracao_minutos=duracao_atendimento
+        )
+
+        # Se escolheu PIX e tem valor a pagar, gera dados de pagamento Pix
+        if metodo_pagamento in ["pix", "pix_sinal", "pix_total"] and valor_final > 0:
+            valor_pix = valor_final
+            txid = f"DELA{agendamento.id}{int(datetime.now().timestamp()) % 10000}"
+            payload_pix = gerar_payload_pix(
+                chave_pix="delacruz@barber.com.br",
+                nome_recebedor="Delacruz Barber",
+                cidade_recebedor="Maringa",
+                valor=valor_pix,
+                txid=txid
+            )
+            PagamentoPix.objects.create(
+                agendamento=agendamento,
+                transacao_id=txid,
+                valor=valor_pix,
+                qr_code_payload=payload_pix,
+                status="pendente"
+            )
+            messages.success(self.request, "Agendamento reservado! Efetue o pagamento via Pix para confirmação. 📱")
+            return redirect("pix_pagamento", pk=agendamento.id)
+
+        if coberto_por_assinatura:
+            messages.success(self.request, "Agendamento confirmado com sucesso pelo seu Plano VIP Delacruz Club! 👑")
+        else:
+            messages.success(self.request, "Seu agendamento foi solicitado com sucesso! Acompanhe em sua área. ✅")
+            
+        if self.request.user.is_authenticated:
+            return redirect("area_cliente")
         return super().form_valid(form)
 
 
@@ -293,6 +408,8 @@ class HorariosDisponiveisView(View):
     def get(self, request, *args, **kwargs):
         barbeiro_id = request.GET.get("barbeiro")
         data_str = request.GET.get("data")
+        servico_id = request.GET.get("servico") or request.GET.get("servico_id")
+        plano_id = request.GET.get("plano") or request.GET.get("plano_id")
         
         if not barbeiro_id or not data_str:
             return JsonResponse({"error": "Parâmetros 'barbeiro' e 'data' são obrigatórios."}, status=400)
@@ -306,44 +423,106 @@ class HorariosDisponiveisView(View):
             "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
             "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
             "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
-            "20:00", "20:30", "21:00"
+            "20:00", "20:30", "21:00", "21:30"
         ]
         
         barbeiro = Barbeiro.objects.filter(id=barbeiro_id, ativo=True).first()
         if not barbeiro:
             return JsonResponse({"error": "Barbeiro não encontrado."}, status=404)
             
+        # Determina a duração prevista do atendimento (em minutos)
+        duracao_atendimento = 30
+        if servico_id:
+            serv = Servico.objects.filter(id=servico_id, ativo=True).first()
+            if serv:
+                duracao_atendimento = serv.duracao_minutos
+        elif plano_id:
+            plano = PlanoAssinatura.objects.filter(Q(id=plano_id) | Q(codigo=plano_id), ativo=True).first()
+            if plano and plano.servicos_inclusos.exists():
+                duracao_atendimento = sum(s.duracao_minutos for s in plano.servicos_inclusos.all())
+
+        buffer_minutos = 5
+        duracao_ocupada_candidato = duracao_atendimento + buffer_minutos
+
+        # Verifica folga do dia (dia inteiro bloqueado)
+        dia_todo_bloqueado = BloqueioHorarioBarbeiro.objects.filter(barbeiro=barbeiro, data=data, dia_inteiro=True).exists()
+        if dia_todo_bloqueado:
+            return JsonResponse({
+                "times": [{"time": t, "available": False} for t in default_times],
+                "dia_bloqueado": True,
+                "duracao_atendimento": duracao_atendimento
+            })
+
+        # Coleta intervalos ocupados existentes (Agendamentos ativos)
+        agendamentos = Agendamento.objects.filter(
+            barbeiro=barbeiro,
+            data=data
+        ).exclude(status="cancelado")
+
+        intervalos_ocupados = []
+        for ag in agendamentos:
+            dur_ag = ag.duracao_total_minutos or (ag.servico.duracao_minutos if ag.servico else 30)
+            inicio_dt = datetime.combine(data, ag.horario)
+            fim_ocupado_dt = inicio_dt + timedelta(minutes=dur_ag + buffer_minutos)
+            intervalos_ocupados.append((inicio_dt, fim_ocupado_dt))
+
+        # Coleta bloqueios pontuais do barbeiro
+        bloqueios = BloqueioHorarioBarbeiro.objects.filter(
+            barbeiro=barbeiro, data=data, dia_inteiro=False, horario__isnull=False
+        )
+        for bl in bloqueios:
+            inicio_dt = datetime.combine(data, bl.horario)
+            fim_ocupado_dt = inicio_dt + timedelta(minutes=30 + buffer_minutos)
+            intervalos_ocupados.append((inicio_dt, fim_ocupado_dt))
+
+        # Verifica quais horários estão ativos no cadastro do barbeiro
         horarios_disp = HorarioDisponivel.objects.filter(barbeiro=barbeiro, ativo=True)
         if horarios_disp.exists():
-            active_times = [h.horario.strftime("%H:%M") for h in horarios_disp]
+            active_times_set = set(h.horario.strftime("%H:%M") for h in horarios_disp)
         else:
-            active_times = default_times
-            
-        blocked_times = Agendamento.objects.filter(
-            barbeiro=barbeiro,
-            data=data,
-        ).exclude(status="cancelado").values_list("horario", flat=True)
-        blocked_times_str = [t.strftime("%H:%M") for t in blocked_times]
-        
+            active_times_set = set(default_times)
+
+        agora = datetime.now()
         response_data = []
+
         for t_str in default_times:
-            if t_str in active_times:
-                is_available = t_str not in blocked_times_str
-                if data == date.today():
-                    now_time_str = datetime.now().strftime("%H:%M")
-                    if t_str <= now_time_str:
-                        is_available = False
+            if t_str not in active_times_set:
                 response_data.append({
                     "time": t_str,
-                    "available": is_available
+                    "available": False,
+                    "duracao_minutos": duracao_atendimento
                 })
-            else:
-                response_data.append({
-                    "time": t_str,
-                    "available": False
-                })
-                
-        return JsonResponse({"times": response_data})
+                continue
+
+            h_time = datetime.strptime(t_str, "%H:%M").time()
+            cand_inicio_dt = datetime.combine(data, h_time)
+            cand_fim_ocupado_dt = cand_inicio_dt + timedelta(minutes=duracao_ocupada_candidato)
+
+            # Colisão de intervalos semiabertos: inicio_cand < fim_exist e fim_cand > inicio_exist
+            colide = False
+            for oc_inicio, oc_fim in intervalos_ocupados:
+                if cand_inicio_dt < oc_fim and cand_fim_ocupado_dt > oc_inicio:
+                    colide = True
+                    break
+
+            # Se for hoje, bloqueia horários no passado
+            if not colide and data == date.today():
+                if cand_inicio_dt <= agora:
+                    colide = True
+
+            response_data.append({
+                "time": t_str,
+                "available": not colide,
+                "duracao_minutos": duracao_atendimento,
+                "termino_previsto": (cand_inicio_dt + timedelta(minutes=duracao_atendimento)).strftime("%H:%M")
+            })
+
+        return JsonResponse({
+            "times": response_data,
+            "dia_bloqueado": False,
+            "duracao_atendimento": duracao_atendimento,
+            "buffer_minutos": buffer_minutos
+        })
 
 
 # --- CLIENT VIEWS ---
@@ -368,6 +547,19 @@ class AreaClienteView(ClienteRequiredMixin, TemplateView):
                 cliente=cliente,
                 status="concluido"
             ).order_by("-data", "-horario").first()
+            
+            # 1. Carteirinha de Fidelidade Digital (10 selos)
+            cartao, _ = CartaoFidelidade.objects.get_or_create(cliente=cliente)
+            context["fidelidade"] = cartao
+            context["selos_preenchidos"] = range(min(cartao.pontos_acumulados, 10))
+            context["selos_restantes"] = range(max(10 - cartao.pontos_acumulados, 0))
+            
+            # 2. Clube de Assinatura VIP
+            assinatura = AssinaturaCliente.objects.select_related("plano").filter(cliente=cliente, status="ativa").first()
+            context["assinatura"] = assinatura
+            
+            # 3. Fila de espera ativa do cliente
+            context["filas_ativas"] = FilaEspera.objects.filter(cliente=cliente, status="aguardando").order_by("data_desejada")
         return context
 
 
@@ -484,24 +676,88 @@ class AgendamentosBarbeiroView(BarbeiroRequiredMixin, TemplateView):
         if barbeiro:
             context["agendamentos"] = Agendamento.objects.select_related(
                 "cliente", "servico"
-            ).filter(
+            ).prefetch_related("vendas_produtos__produto").filter(
                 barbeiro=barbeiro
             ).order_by("data", "horario")
+            context["produtos_disponiveis"] = Produto.objects.filter(ativo=True, estoque__gt=0).order_by("nome")
         return context
 
     def post(self, request, *args, **kwargs):
         agendamento_id = request.POST.get("agendamento_id")
+        action = request.POST.get("action", "status")
         novo_status = request.POST.get("status")
         barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
         
-        if agendamento_id and novo_status in ["confirmado", "concluido", "cancelado"]:
-            agendamento = Agendamento.objects.filter(id=agendamento_id, barbeiro=barbeiro).first()
-            if agendamento:
-                agendamento.status = novo_status
-                agendamento.save()
-                messages.success(request, f"Status do agendamento atualizado para {agendamento.get_status_display()}! ✅")
+        if not agendamento_id or not barbeiro:
+            messages.error(request, "Ação inválida.")
+            return redirect("agendamentos_barbeiro")
+            
+        agendamento = Agendamento.objects.filter(id=agendamento_id, barbeiro=barbeiro).first()
+        if not agendamento:
+            messages.error(request, "Agendamento não encontrado.")
+            return redirect("agendamentos_barbeiro")
+            
+        if action == "toggle_checkin":
+            agendamento.checkin_realizado = not agendamento.checkin_realizado
+            agendamento.save()
+            estado = "confirmada" if agendamento.checkin_realizado else "desfeita"
+            messages.success(request, f"Presença de {agendamento.cliente.nome} {estado}! 📍")
+            return redirect("agendamentos_barbeiro")
+
+        if action == "toggle_atendimento":
+            agendamento.em_atendimento = not agendamento.em_atendimento
+            agendamento.save()
+            msg = "iniciado na cadeira" if agendamento.em_atendimento else "finalizado na cadeira"
+            messages.info(request, f"Atendimento de {agendamento.cliente.nome} {msg}! 💈")
+            return redirect("agendamentos_barbeiro")
+
+        if action == "marcar_pago":
+            agendamento.status_pagamento = "pago"
+            agendamento.save()
+            messages.success(request, f"Pagamento de {agendamento.cliente.nome} marcado como PAGO! 💵")
+            return redirect("agendamentos_barbeiro")
+
+        if novo_status in ["confirmado", "concluido", "cancelado"]:
+            agendamento.status = novo_status
+            if novo_status == "concluido":
+                agendamento.em_atendimento = False
+                agendamento.status_pagamento = "pago"
+                
+                # 1. Carimba selo na Carteirinha de Fidelidade
+                cartao, _ = CartaoFidelidade.objects.get_or_create(cliente=agendamento.cliente)
+                cartao.registrar_corte_concluido(agendamento)
+                
+                # 2. Registra comissão do barbeiro
+                if float(barbeiro.percentual_comissao) > 0:
+                    base_val = float(agendamento.servico.preco if agendamento.servico else agendamento.valor_total)
+                    comissao_val = round((base_val * float(barbeiro.percentual_comissao)) / 100, 2)
+                    ComissaoBarbeiro.objects.update_or_create(
+                        agendamento=agendamento,
+                        defaults={
+                            "barbeiro": barbeiro,
+                            "valor_total_servico": base_val,
+                            "percentual_comissao": barbeiro.percentual_comissao,
+                            "valor_comissao": comissao_val,
+                        }
+                    )
+                messages.success(request, f"Corte de {agendamento.cliente.nome} concluído! Selo de fidelidade carimbado. ⭐")
+
+            elif novo_status == "cancelado":
+                # Fila de espera inteligente: busca quem estava aguardando vaga
+                espera = FilaEspera.objects.filter(
+                    data_desejada=agendamento.data,
+                    status="aguardando"
+                ).filter(Q(barbeiro=barbeiro) | Q(barbeiro__isnull=True)).first()
+                if espera:
+                    espera.status = "notificado"
+                    espera.save()
+                    messages.info(request, f"Vaga liberada! O cliente {espera.cliente.nome} da Fila de Espera foi prioritariamente notificado. 🔔")
+                messages.warning(request, f"Agendamento de {agendamento.cliente.nome} cancelado.")
             else:
-                messages.error(request, "Agendamento não encontrado.")
+                messages.success(request, f"Agendamento confirmado com sucesso! ✅")
+                
+            agendamento.save()
+            
         return redirect("agendamentos_barbeiro")
 
 
@@ -1071,3 +1327,222 @@ class FotoTrabalhoDetailView(AdminRequiredMixin, DetailView):
 
     def get_queryset(self):
         return FotoTrabalho.objects.filter(usuario=self.request.user)
+
+
+# =========================================================================
+# NOVAS FUNCIONALIDADES: PIX, BLOQUEIOS, FICHA, COMANDA, FILA, TV, CLUBE
+# =========================================================================
+
+class PagamentoPixDetailView(DetailView):
+    model = Agendamento
+    template_name = "website/pix_pagamento.html"
+    context_object_name = "agendamento"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        agendamento = self.get_object()
+        pix = getattr(agendamento, "pagamento_pix", None)
+        if pix:
+            context["pix"] = pix
+            context["qrcode_url"] = gerar_url_qrcode_pix(pix.qr_code_payload, tamanho=260)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        agendamento = self.get_object()
+        pix = getattr(agendamento, "pagamento_pix", None)
+        # Simula/Confirma o pagamento via Pix
+        if pix:
+            pix.status = "pago"
+            pix.pago_em = datetime.now()
+            pix.save()
+            agendamento.status = "confirmado"
+            agendamento.status_pagamento = "pago"
+            agendamento.save()
+            messages.success(request, "Pagamento PIX confirmado com sucesso! Seu horário está garantido. 🎉")
+        if request.user.is_authenticated:
+            return redirect("area_cliente")
+        return redirect("pagina_inicial")
+
+
+class BloqueiosBarbeiroView(BarbeiroRequiredMixin, TemplateView):
+    template_name = "website/barbeiro/bloqueios.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
+        context["barbeiro"] = barbeiro
+        context["bloqueios"] = BloqueioHorarioBarbeiro.objects.filter(barbeiro=barbeiro).order_by("-data")
+        context["form"] = BloqueioHorarioForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
+        form = BloqueioHorarioForm(request.POST)
+        if form.is_valid():
+            bloqueio = form.save(commit=False)
+            bloqueio.barbeiro = barbeiro
+            bloqueio.save()
+            messages.success(request, "Horário/Data bloqueado com sucesso! ✅")
+        else:
+            messages.error(request, "Erro ao registrar bloqueio. Verifique os dados.")
+        return redirect("bloqueios_barbeiro")
+
+
+class BloqueioBarbeiroDeleteView(BarbeiroRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
+        bloqueio = BloqueioHorarioBarbeiro.objects.filter(id=pk, barbeiro=barbeiro).first()
+        if bloqueio:
+            bloqueio.delete()
+            messages.success(request, "Bloqueio removido! O horário voltou a ficar disponível. ✅")
+        return redirect("bloqueios_barbeiro")
+
+
+class FichaClienteView(BarbeiroRequiredMixin, View):
+    def get(self, request, cliente_id, *args, **kwargs):
+        barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
+        cliente = Cliente.objects.filter(id=cliente_id).first()
+        if not cliente:
+            messages.error(request, "Cliente não encontrado.")
+            return redirect("agendamentos_barbeiro")
+        ficha, _ = FichaCliente.objects.get_or_create(cliente=cliente, barbeiro=barbeiro)
+        form = FichaClienteForm(instance=ficha)
+        return render(request, "website/barbeiro/ficha_cliente.html", {
+            "cliente": cliente,
+            "barbeiro": barbeiro,
+            "ficha": ficha,
+            "form": form,
+        })
+
+    def post(self, request, cliente_id, *args, **kwargs):
+        barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
+        cliente = Cliente.objects.filter(id=cliente_id).first()
+        ficha, _ = FichaCliente.objects.get_or_create(cliente=cliente, barbeiro=barbeiro)
+        form = FichaClienteForm(request.POST, instance=ficha)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Ficha técnica de {cliente.nome} atualizada com sucesso! 📝")
+            return redirect("agendamentos_barbeiro")
+        return render(request, "website/barbeiro/ficha_cliente.html", {
+            "cliente": cliente,
+            "barbeiro": barbeiro,
+            "ficha": ficha,
+            "form": form,
+        })
+
+
+class ComandaAgendamentoView(BarbeiroRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
+        agendamento = Agendamento.objects.filter(id=pk, barbeiro=barbeiro).first()
+        produto_id = request.POST.get("produto_id")
+        quantidade = int(request.POST.get("quantidade", 1))
+
+        if agendamento and produto_id:
+            produto = Produto.objects.filter(id=produto_id, ativo=True).first()
+            if produto and produto.estoque >= quantidade:
+                valor_total = float(produto.preco) * quantidade
+                VendaProduto.objects.create(
+                    produto=produto,
+                    cliente=agendamento.cliente,
+                    barbeiro=barbeiro,
+                    agendamento=agendamento,
+                    quantidade=quantidade,
+                    valor_total=valor_total
+                )
+                produto.estoque -= quantidade
+                produto.save()
+                messages.success(request, f"{quantidade}x {produto.nome} adicionado à comanda! 🛒")
+            else:
+                messages.error(request, "Produto fora de estoque ou inválido.")
+        return redirect("agendamentos_barbeiro")
+
+
+class FilaEsperaCreateView(View):
+    def get(self, request, *args, **kwargs):
+        form = FilaEsperaForm()
+        return render(request, "website/fila_espera.html", {"form": form})
+
+    def post(self, request, *args, **kwargs):
+        form = FilaEsperaForm(request.POST)
+        if form.is_valid():
+            cliente = None
+            if request.user.is_authenticated:
+                cliente = Cliente.objects.filter(usuario=request.user).first()
+            if not cliente:
+                messages.error(request, "Por favor, faça login ou cadastre-se para entrar na fila de espera.")
+                return redirect("login")
+            
+            fila = form.save(commit=False)
+            fila.cliente = cliente
+            fila.save()
+            messages.success(request, "Você está na Fila de Espera! Se uma vaga abrir nesta data, você será notificado com prioridade. 🔔")
+            return redirect("area_cliente")
+        return render(request, "website/fila_espera.html", {"form": form})
+
+
+class PainelRecepcaoTVView(TemplateView):
+    template_name = "website/salao/painel_tv.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        hoje = date.today()
+        context["data_hoje"] = hoje
+        context["barbeiros"] = Barbeiro.objects.filter(ativo=True)
+        
+        # Agendamentos de hoje
+        agendamentos_hoje = Agendamento.objects.select_related("cliente", "servico", "barbeiro").filter(
+            data=hoje
+        ).exclude(status="cancelado").order_by("horario")
+        
+        context["em_atendimento"] = agendamentos_hoje.filter(em_atendimento=True)
+        context["proximos"] = agendamentos_hoje.filter(status__in=["pendente", "confirmado"], em_atendimento=False)[:6]
+        context["fotos_trabalho"] = FotoTrabalho.objects.filter(publicado=True)[:6]
+        return context
+
+
+class CheckinChegadaView(View):
+    def post(self, request, pk, *args, **kwargs):
+        agendamento = Agendamento.objects.filter(id=pk).first()
+        if agendamento:
+            agendamento.checkin_realizado = True
+            agendamento.save()
+            messages.success(request, f"Check-in realizado! Seja bem-vindo(a) à Delacruz Barber, {agendamento.cliente.nome}! 💈")
+        if request.user.is_authenticated:
+            return redirect("area_cliente")
+        return redirect("painel_tv")
+
+
+class ClubeAssinaturaView(TemplateView):
+    template_name = "website/clube/planos.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["planos"] = PlanoAssinatura.objects.filter(ativo=True).order_by("ordem", "preco_mensal")
+        if self.request.user.is_authenticated:
+            cliente = Cliente.objects.filter(usuario=self.request.user).first()
+            if cliente:
+                context["minha_assinatura"] = AssinaturaCliente.objects.filter(cliente=cliente, status="ativa").first()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.info(request, "Faça login para assinar um plano do Delacruz Club.")
+            return redirect("login")
+        plano_id = request.POST.get("plano_id")
+        cliente = Cliente.objects.filter(usuario=request.user).first()
+        if cliente and plano_id:
+            plano = PlanoAssinatura.objects.filter(id=plano_id, ativo=True).first()
+            if plano:
+                # Cria ou ativa assinatura
+                AssinaturaCliente.objects.update_or_create(
+                    cliente=cliente,
+                    defaults={
+                        "plano": plano,
+                        "status": "ativa",
+                        "cortes_usados_mes": 0,
+                    }
+                )
+                messages.success(request, f"Parabéns! Você agora é membro VIP do plano {plano.nome}! 👑 Aproveite seus cortes com agilidade.")
+                return redirect("area_cliente")
+        return redirect("clube_planos")

@@ -39,7 +39,12 @@ from .views import (
     FeedbackListView, FeedbackDetailView, FeedbackDeleteView,
     
     # Admin CRUD - FotoTrabalho
-    FotoTrabalhoListView, FotoTrabalhoDetailView
+    FotoTrabalhoListView, FotoTrabalhoDetailView,
+    
+    # Novas Funcionalidades
+    PagamentoPixDetailView, BloqueiosBarbeiroView, BloqueioBarbeiroDeleteView,
+    FichaClienteView, ComandaAgendamentoView, FilaEsperaCreateView,
+    PainelRecepcaoTVView, CheckinChegadaView, ClubeAssinaturaView
 )
 
 urlpatterns = [
@@ -68,15 +73,26 @@ urlpatterns = [
     path("cliente/perfil/", PerfilClienteUpdateView.as_view(), name="perfil_cliente"),
     path("cliente/cancelar/<int:pk>/", AgendamentoClienteCancelView.as_view(), name="cancelar_agendamento_cliente"),
     
-    # Barber Dashboard / Area
+    # Barber Area Views
     path("barbeiro/area/", AreaBarbeiroView.as_view(), name="area_barbeiro"),
     path("barbeiro/agendamentos/", AgendamentosBarbeiroView.as_view(), name="agendamentos_barbeiro"),
     path("barbeiro/historico/", HistoricoBarbeiroView.as_view(), name="historico_barbeiro"),
     path("barbeiro/relatorios/", RelatoriosBarbeiroView.as_view(), name="relatorios_barbeiro"),
+    path("barbeiro/bloqueios/", BloqueiosBarbeiroView.as_view(), name="bloqueios_barbeiro"),
+    path("barbeiro/bloqueios/excluir/<int:pk>/", BloqueioBarbeiroDeleteView.as_view(), name="excluir_bloqueio_barbeiro"),
+    path("barbeiro/ficha/<int:cliente_id>/", FichaClienteView.as_view(), name="ficha_cliente"),
+    path("barbeiro/comanda/<int:pk>/", ComandaAgendamentoView.as_view(), name="adicionar_comanda"),
     path("barbeiro/fotos/", FotosBarbeiroListView.as_view(), name="fotos_barbeiro"),
     path("barbeiro/fotos/cadastrar/", FotoTrabalhoCreateView.as_view(), name="cadastrar_foto_barbeiro"),
     path("barbeiro/fotos/editar/<int:pk>/", FotoTrabalhoUpdateView.as_view(), name="editar_foto_barbeiro"),
     path("barbeiro/fotos/excluir/<int:pk>/", FotoTrabalhoDeleteView.as_view(), name="excluir_foto_barbeiro"),
+    
+    # Novas Funcionalidades Públicas e de Salão
+    path("pix/<int:pk>/", PagamentoPixDetailView.as_view(), name="pix_pagamento"),
+    path("fila-espera/", FilaEsperaCreateView.as_view(), name="fila_espera"),
+    path("salao/painel/", PainelRecepcaoTVView.as_view(), name="painel_tv"),
+    path("salao/checkin/<int:pk>/", CheckinChegadaView.as_view(), name="checkin_chegada"),
+    path("clube/", ClubeAssinaturaView.as_view(), name="clube_planos"),
     
     # Admin Dashboard
     path("dashboard/", DashboardView.as_view(), name="dashboard"),

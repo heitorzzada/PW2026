@@ -38,6 +38,25 @@
             {% endfor %}
         </div>
         {% include "website/paginacao.html" %}
+
+        <!-- Banner de Inspirações de Cortes Reais -->
+        <div class="mt-5 p-4 rounded-4 glass-card border border-warning border-opacity-25 text-center">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7 text-lg-start">
+                    <span class="badge bg-warning text-dark fw-bold mb-2">Galeria de Resultados</span>
+                    <h3 class="h4 text-white mb-2">Quer inspiração para o seu próximo visual?</h3>
+                    <p class="text-secondary small mb-0">Veja fotos reais de cortes degradê, riscos freestyle e alinhamento de barba feitos na nossa cadeira.</p>
+                </div>
+                <div class="col-lg-5 text-lg-end text-center">
+                    <a href="{% url 'pagina_inicial' %}#galeria" class="btn btn-delacruz-outline px-4 py-2 me-2">
+                        <i class="bi bi-images me-1"></i> Ver Galeria de Cortes
+                    </a>
+                    <a href="{% url 'agendamento' %}" class="btn btn-delacruz px-4 py-2">
+                        <i class="bi bi-calendar-check me-1"></i> Agendar Agora
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 {% endblock %}

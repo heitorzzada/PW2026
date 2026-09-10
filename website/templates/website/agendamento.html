@@ -1,4 +1,5 @@
 {% extends "website/modelo.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
 
 {% block titulo_pagina %}Agendar Horário - Delacruz Barber{% endblock %}
@@ -46,32 +47,66 @@
                             </div>
                         </div>
 
-                        <!-- Time Selection Grid -->
+                        <!-- Time Selection Section -->
                         <div class="mt-4">
-                            <label class="form-label d-block">2. Escolha o Horário Disponível</label>
-                            {{ form.horario }} <!-- Hidden field populated by main.js -->
+                            <h4 class="h5 text-warning mb-3">
+                                <i class="bi bi-clock-history"></i> 2. Horários do Dia (Disponíveis e Ocupados)
+                            </h4>
+
+                            <!-- Campo do formulário para registrar o horário escolhido na tabela -->
+                            <div class="d-none">
+                                {{ form.horario }}
+                            </div>
                             
                             {% if form.horario.errors %}
-                                <div class="alert alert-danger small py-2 my-2">{{ form.horario.errors }}</div>
+                                <div class="alert alert-danger py-2 mb-3 small">
+                                    <i class="bi bi-exclamation-circle me-1"></i> Por favor, selecione um dos horários disponíveis na tabela abaixo.
+                                </div>
                             {% endif %}
                             
-                            <div id="time-grid-container" class="p-3 bg-dark rounded border border-secondary">
-                                <div class="text-center text-muted py-3">
-                                    <i class="bi bi-info-circle fs-4 d-block mb-2"></i>
-                                    Selecione um barbeiro e uma data para ver os horários.
+                            <!-- Legenda de Cores e Estados -->
+                            <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
+                                <div class="d-flex gap-3 small flex-wrap align-items-center">
+                                    <span class="text-success fw-semibold">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Verde = Disponível
+                                    </span>
+                                    <span class="text-white-50">
+                                        <i class="bi bi-dash-circle-dotted me-1"></i> Fosco = Indisponível (Não Clicável)
+                                    </span>
+                                    <span class="text-warning fw-semibold">
+                                        <i class="bi bi-star-fill me-1"></i> Dourado = Selecionado
+                                    </span>
                                 </div>
+                                <small class="text-white-50"><i class="bi bi-arrow-repeat me-1"></i>Atualizado em tempo real</small>
+                            </div>
+
+                            <!-- Tabela Dinâmica de Horários -->
+                            <div id="time-grid-container" class="rounded">
+                                <div class="text-center text-muted py-4 p-3 bg-dark rounded border border-secondary shadow-sm">
+                                    <i class="bi bi-calendar2-range fs-3 d-block mb-2 text-warning"></i>
+                                    Selecione um barbeiro e uma data acima para carregar a tabela de horários.
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 text-end">
+                                <small class="text-secondary">
+                                    Não encontrou o horário ideal? 
+                                    <a href="{% url 'fila_espera' %}" class="text-warning text-decoration-underline fw-bold">
+                                        <i class="bi bi-clock-history"></i> Entrar na Fila de Espera deste dia
+                                    </a>
+                                </small>
                             </div>
                         </div>
                     </div>
 
                     <!-- STEP 3: Customer Information -->
-                    <div class="card glass-card p-4">
+                    <div class="card glass-card p-4 mb-4">
                         <h3 class="h4 text-white mb-4"><i class="bi bi-person-badge"></i> 3. Seus Dados de Contato</h3>
                         
                         {% if not request.user.is_authenticated %}
                             <div class="alert alert-delacruz small py-2 mb-3">
                                 <i class="bi bi-lightbulb-fill me-1"></i>
-                                Dica: Faça <a href="{% url 'login' %}" class="alert-link text-white text-decoration-underline">Login</a> ou crie uma <a href="{% url 'cadastro' %}" class="alert-link text-white text-decoration-underline">Conta</a> para salvar seus dados e acompanhar o histórico de cortes.
+                                Dica: Faça <a href="{% url 'login' %}" class="alert-link text-white text-decoration-underline">Login</a> ou crie uma <a href="{% url 'cadastro' %}" class="alert-link text-white text-decoration-underline">Conta</a> para acumular selos na <strong>Carteirinha de Fidelidade</strong> e ganhar cortes grátis!
                             </div>
                         {% endif %}
 
@@ -109,6 +144,24 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- STEP 4: Payment & Coupon -->
+                    <div class="card glass-card p-4">
+                        <h3 class="h4 text-warning mb-4"><i class="bi bi-credit-card-2-front"></i> 4. Pagamento e Cupons</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="id_metodo_pagamento" class="form-label">Forma de Pagamento</label>
+                                {{ form.metodo_pagamento }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id_cupom_codigo" class="form-label">Cupom ou Código de Amigo</label>
+                                {{ form.cupom_codigo }}
+                                <div class="form-text text-secondary">
+                                    Tem um código de amigo ou cupom? Digite aqui para receber o desconto.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- SIDEBAR: Summary and Submit -->
@@ -116,15 +169,40 @@
                     <div class="card glass-card p-4 sticky-top" style="top: 100px; z-index: 10;">
                         <h3 class="h4 text-white mb-4"><i class="bi bi-receipt"></i> Resumo do Agendamento</h3>
                         
-                        <div id="booking-summary" class="p-3 bg-dark rounded border border-secondary mb-4">
-                            <p class="text-muted text-center mb-0">
+                        <div id="booking-summary" class="p-3 rounded border mb-4">
+                            <div class="text-center py-4 text-white-50">
+                                <i class="bi bi-receipt fs-3 d-block mb-2 text-warning"></i>
                                 Preencha as informações para ver o resumo aqui.
-                            </p>
+                            </div>
                         </div>
                         
                         <button type="submit" class="btn btn-delacruz w-100 py-3 fs-5">
                             Confirmar Agendamento <i class="bi bi-check2-circle"></i>
                         </button>
+
+                        <!-- Mini Galeria de Inspirações -->
+                        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-warning small fw-bold text-uppercase">
+                                    <i class="bi bi-stars me-1"></i> Cortes da Casa
+                                </span>
+                                <span class="badge bg-dark text-warning border border-warning border-opacity-25" style="font-size: 0.65rem;">Delacruz</span>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <img src="{% static 'images/cortes/tribal_wave_fade.jpg' %}" class="img-fluid rounded border border-warning border-opacity-25 shadow-sm object-fit-cover w-100" style="height: 75px;" alt="Freestyle Tribal" title="Low Fade com Linhas Freestyle">
+                                </div>
+                                <div class="col-4">
+                                    <img src="{% static 'images/cortes/freestyle_raio_curls.jpg' %}" class="img-fluid rounded border border-warning border-opacity-25 shadow-sm object-fit-cover w-100" style="height: 75px;" alt="Mid Fade Raio" title="Mid Fade Raio em Cachos">
+                                </div>
+                                <div class="col-4">
+                                    <img src="{% static 'images/cortes/taper_fade_delacruz.jpg' %}" class="img-fluid rounded border border-warning border-opacity-25 shadow-sm object-fit-cover w-100" style="height: 75px;" alt="Taper Fade" title="Taper Fade com Acabamento Preciso">
+                                </div>
+                            </div>
+                            <small class="text-white-50 d-block mt-2" style="font-size: 0.72rem;">
+                                <i class="bi bi-check-circle text-success me-1"></i>Trabalhos autorais dos nossos barbeiros.
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -133,3 +211,17 @@
     </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+// Força inicialização da tabela de horários assim que o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", function() {
+    const bSelect = document.querySelector('select[name="barbeiro"]');
+    const dInput = document.querySelector('input[name="data"]');
+    if (bSelect && dInput && bSelect.value && dInput.value) {
+        bSelect.dispatchEvent(new Event("change"));
+    }
+});
+</script>
+{% endblock %}
+

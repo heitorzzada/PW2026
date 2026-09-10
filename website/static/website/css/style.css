@@ -302,3 +302,314 @@ div.text-muted {
     color: #fde047 !important;
 }
 
+/* =========================================================
+   TABELA DE HORÁRIOS ORGANIZADA (SEPARADOS / FOSCO)
+   ========================================================= */
+
+.schedule-table-wrapper {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.schedule-table-header {
+    background: rgba(10, 15, 26, 0.95);
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.schedule-matrix-table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.schedule-matrix-table th {
+    background: rgba(15, 23, 42, 0.95);
+    color: #94a3b8 !important;
+    font-size: 0.82rem;
+    letter-spacing: 0.05em;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.schedule-matrix-table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    vertical-align: middle;
+}
+
+.schedule-matrix-table tr:last-child td {
+    border-bottom: none;
+}
+
+.schedule-period-cell {
+    background: rgba(11, 17, 30, 0.75);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 16px 14px;
+    text-align: center;
+    width: 135px;
+    min-width: 125px;
+}
+
+.schedule-period-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: block;
+}
+
+.schedule-period-hours {
+    font-size: 0.75rem;
+    color: #94a3b8 !important;
+    display: block;
+    margin-top: 3px;
+}
+
+.schedule-slots-cell {
+    padding: 14px 18px;
+    background: rgba(15, 23, 42, 0.4);
+}
+
+/* Grid de horários separados em cada período da tabela */
+.schedule-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 10px;
+}
+
+/* Base de cada horário separado */
+.slot-cell-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 8px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    outline: none;
+    text-align: center;
+    min-height: 56px;
+    border: none;
+    box-sizing: border-box;
+}
+
+/* 1. HORÁRIO DISPONÍVEL (Nítido, separado, interativo, com borda esmeralda sutil) */
+.slot-cell-btn.slot-available {
+    background: rgba(17, 24, 39, 0.85);
+    border: 1.5px solid rgba(34, 197, 94, 0.45);
+    color: #f8fafc;
+    cursor: pointer;
+}
+
+.slot-cell-btn.slot-available:hover {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: #22c55e;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+}
+
+.slot-cell-btn.slot-available .slot-time {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.slot-cell-btn.slot-available .slot-badge-status {
+    font-size: 0.7rem;
+    color: #4ade80;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 2px;
+}
+
+/* 2. HORÁRIO SELECIONADO (Destaque dourado de alto contraste) */
+.slot-cell-btn.slot-selected {
+    background: #fde047 !important;
+    border: 2px solid #fde047 !important;
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    box-shadow: 0 0 16px rgba(253, 224, 71, 0.6) !important;
+    transform: scale(1.04);
+}
+
+.slot-cell-btn.slot-selected .slot-time {
+    font-size: 1.02rem;
+    font-weight: 800;
+    color: #0f172a !important;
+}
+
+.slot-cell-btn.slot-selected .slot-badge-status {
+    font-size: 0.72rem;
+    color: #0f172a !important;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* 3. HORÁRIO INDISPONÍVEL (FORMA FOSCA E NÃO CLICÁVEL) */
+.slot-cell-btn.slot-unavailable {
+    background: rgba(30, 41, 59, 0.25) !important;
+    border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+    opacity: 0.30 !important;
+    filter: grayscale(100%) !important;
+    pointer-events: none !important;        /* Totalmente não clicável */
+    cursor: not-allowed !important;          /* Indicador de indisponibilidade */
+    user-select: none !important;            /* Não selecionável */
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.slot-cell-btn.slot-unavailable .slot-time {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.35) !important;
+    text-decoration: line-through;
+}
+
+.slot-cell-btn.slot-unavailable .slot-badge-status {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.3) !important;
+    margin-top: 2px;
+}
+
+/* =========================================================
+   RESUMO DO AGENDAMENTO (ALTO CONTRASTE E LEGIBILIDADE)
+   ========================================================= */
+
+#booking-summary {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 12px;
+}
+
+#booking-summary .summary-details {
+    color: #ffffff !important;
+}
+
+#booking-summary .summary-details span.text-white {
+    color: #ffffff !important;
+}
+
+#booking-summary .summary-details span.text-warning {
+    color: #fde047 !important;
+}
+
+#booking-summary .summary-details span.text-white-50 {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+#booking-summary .badge.bg-warning {
+    background-color: #fde047 !important;
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
+/* =========================================================
+   HERO SHOWCASE & GALERIA DE CORTES
+   ========================================================= */
+
+.hero-showcase {
+    position: relative;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.hero-main-card {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2px solid rgba(253, 224, 71, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 35px rgba(253, 224, 71, 0.2);
+    position: relative;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.hero-main-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 45px rgba(253, 224, 71, 0.35);
+}
+
+.floating-badge {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(253, 224, 71, 0.3);
+    border-radius: 50px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    z-index: 5;
+    animation: floatAnim 4s ease-in-out infinite alternate;
+}
+
+@keyframes floatAnim {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-8px); }
+}
+
+.gallery-card {
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.gallery-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(253, 224, 71, 0.5) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(253, 224, 71, 0.2) !important;
+}
+
+.gallery-card-img-wrap {
+    height: 280px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+
+.gallery-card-img-wrap img {
+    transition: transform 0.5s ease;
+}
+
+.gallery-card:hover .gallery-card-img-wrap img {
+    transform: scale(1.08);
+}
+
+.gallery-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.barber-avatar-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.barber-avatar-img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fde047;
+    box-shadow: 0 0 20px rgba(253, 224, 71, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.barber-avatar-wrap:hover .barber-avatar-img {
+    transform: scale(1.06);
+}
+
+
+
+

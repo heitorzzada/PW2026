@@ -1,0 +1,60 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo_pagina %}Fila de Espera Inteligente - Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-md-9">
+                <div class="card glass-card p-4 p-md-5 border-warning">
+                    <div class="text-center mb-4">
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill mb-2">
+                            <i class="bi bi-clock-history"></i> Fila de Espera Inteligente
+                        </span>
+                        <h2 class="display-6 fw-bold text-white mb-2">Não achou horário para o dia desejado?</h2>
+                        <p class="text-secondary small">
+                            Inscreva-se na nossa fila. Se outro cliente desmarcar ou cancelar, você será avisado imediatamente com prioridade para assumir a vaga!
+                        </p>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label text-white">Barbeiro Preferido:</label>
+                            {{ form.barbeiro }}
+                            <div class="form-text text-secondary">Deixe em branco ou selecione para qualquer barbeiro disponível.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-white">Data Desejada:</label>
+                            {{ form.data_desejada }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-white">Turno de Preferência:</label>
+                            {{ form.turno }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-white">Observações (opcional):</label>
+                            {{ form.observacoes }}
+                        </div>
+
+                        <button type="submit" class="btn btn-delacruz w-100 py-3 fs-5 fw-bold mb-3">
+                            <i class="bi bi-bell-fill"></i> Quero Entrar na Fila de Espera
+                        </button>
+                    </form>
+
+                    <div class="text-center">
+                        <a href="{% url 'agendamento' %}" class="text-secondary text-decoration-none small">
+                            <i class="bi bi-arrow-left"></i> Voltar ao Agendamento Regular
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

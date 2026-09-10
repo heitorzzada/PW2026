@@ -1,0 +1,101 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo_pagina %}Pagamento via PIX - Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="card glass-card p-4 text-center border-warning">
+                    <div class="mb-3">
+                        <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">
+                            <i class="bi bi-qr-code"></i> Pagamento Seguro via PIX
+                        </span>
+                    </div>
+
+                    <h2 class="h3 text-white fw-bold mb-2">Finalize seu Agendamento</h2>
+                    <p class="text-secondary small mb-4">
+                        Escaneie o QR Code abaixo com o app do seu banco ou use a chave Copia e Cola para confirmar instantaneamente.
+                    </p>
+
+                    <!-- Resumo do Valor -->
+                    <div class="p-3 bg-dark rounded border border-secondary mb-4 text-start">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Cliente:</span>
+                            <span class="text-white fw-bold">{{ agendamento.cliente.nome }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Serviço:</span>
+                            <span class="text-white">{{ agendamento.servico.nome }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Barbeiro:</span>
+                            <span class="text-white">{{ agendamento.barbeiro.nome }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Data e Horário:</span>
+                            <span class="text-white">{{ agendamento.data|date:"d/m/Y" }} às {{ agendamento.horario|time:"H:i" }}</span>
+                        </div>
+                        <hr class="border-secondary my-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-warning fw-bold fs-5">Valor a Pagar:</span>
+                            <span class="text-success fw-bold fs-4">R$ {{ pix.valor }}</span>
+                        </div>
+                    </div>
+
+                    <!-- QR Code -->
+                    {% if qrcode_url %}
+                        <div class="bg-white p-3 d-inline-block rounded shadow-lg mb-4">
+                            <img src="{{ qrcode_url }}" alt="QR Code Pix" class="img-fluid" style="max-width: 240px;">
+                        </div>
+                    {% endif %}
+
+                    <!-- Pix Copia e Cola -->
+                    {% if pix.qr_code_payload %}
+                        <div class="mb-4">
+                            <label class="form-label text-muted small d-block mb-1">Código Pix Copia e Cola:</label>
+                            <div class="input-group">
+                                <input type="text" id="pixCodeInput" class="form-control form-control-sm bg-dark text-white border-secondary text-truncate" value="{{ pix.qr_code_payload }}" readonly>
+                                <button class="btn btn-warning btn-sm px-3" type="button" onclick="copiarPix()">
+                                    <i class="bi bi-clipboard"></i> Copiar
+                                </button>
+                            </div>
+                            <small id="copySuccessMsg" class="text-success d-none mt-1 d-block">
+                                <i class="bi bi-check-circle"></i> Código Pix copiado com sucesso!
+                            </small>
+                        </div>
+                    {% endif %}
+
+                    <!-- Botão de Confirmação -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-delacruz w-100 py-3 fs-5 fw-bold mb-3">
+                            <i class="bi bi-check2-all"></i> Já realizei o Pagamento Pix
+                        </button>
+                    </form>
+
+                    <a href="{% url 'area_cliente' %}" class="text-secondary text-decoration-none small">
+                        <i class="bi bi-arrow-left"></i> Voltar para Área do Cliente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function copiarPix() {
+    var copyText = document.getElementById("pixCodeInput");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value).then(function() {
+        var msg = document.getElementById("copySuccessMsg");
+        msg.classList.remove("d-none");
+        setTimeout(function() {
+            msg.classList.add("d-none");
+        }, 3000);
+    });
+}
+</script>
+{% endblock %}

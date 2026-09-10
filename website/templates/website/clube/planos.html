@@ -1,0 +1,138 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo_pagina %}Delacruz Club - Clube de Assinatura VIP{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill mb-2">
+                <i class="bi bi-crown-fill"></i> Delacruz Club VIP
+            </span>
+            <h1 class="display-4 fw-bold text-white mb-3">Seu Corte em Dia, Todo Mês</h1>
+            <p class="text-secondary lead mx-auto" style="max-width: 650px;">
+                Assine um dos nossos planos mensais exclusivos e tenha direito a cortes garantidos, agendamento prioritário e benefícios especiais na Delacruz Barber.
+            </p>
+        </div>
+
+        {% if minha_assinatura %}
+            <div class="alert alert-dark border-warning text-center p-4 mb-5 mx-auto" style="max-width: 700px;">
+                <h4 class="text-warning mb-2"><i class="bi bi-patch-check-fill"></i> Você já é Membro VIP!</h4>
+                <p class="text-white mb-1">Seu plano atual: <strong>{{ minha_assinatura.plano.nome }}</strong> (R$ {{ minha_assinatura.plano.preco_mensal }}/mês)</p>
+                <small class="text-secondary d-block mb-3">Cortes usados no ciclo: {{ minha_assinatura.cortes_usados_mes }} de {{ minha_assinatura.plano.cortes_por_mes }}</small>
+                <a href="{% url 'area_cliente' %}" class="btn btn-warning btn-sm fw-bold">Ir para Minha Área</a>
+            </div>
+        {% endif %}
+
+        <!-- Grid de Planos -->
+        <div class="row g-4 justify-content-center">
+            {% for plano in planos %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="card glass-card p-4 h-100 text-center {% if plano.destaque %}border-warning shadow-lg{% endif %}">
+                        {% if plano.destaque %}
+                            <div class="mb-2">
+                                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill small fw-bold">MAIS ESCOLHIDO</span>
+                            </div>
+                        {% endif %}
+
+                        <h3 class="h4 text-white fw-bold mt-2">{{ plano.nome }}</h3>
+                        
+                        <div class="my-4">
+                            <span class="display-5 fw-bold text-gradient">R$ {{ plano.preco_mensal }}</span>
+                            <span class="text-secondary">/mês</span>
+                        </div>
+
+                        <p class="text-secondary small mb-4">{{ plano.descricao }}</p>
+
+                        <ul class="list-unstyled text-start text-secondary lh-lg mb-4 small mx-auto" style="max-width: 280px;">
+                            <li class="mb-2 text-white">
+                                {% if plano.modalidade == 'ilimitado' %}
+                                    <i class="bi bi-infinity text-warning me-2 fs-6"></i>
+                                    <strong>Cortes Ilimitados</strong> no mês
+                                {% else %}
+                                    <i class="bi bi-check-circle-fill text-warning me-2"></i>
+                                    <strong>{{ plano.limite_mensal|default:plano.cortes_por_mes }} atendimentos</strong> por mês
+                                {% endif %}
+                            </li>
+                            <li class="mb-2 text-white">
+                                <i class="bi bi-scissors text-warning me-2"></i>
+                                {% if plano.servicos_inclusos.exists %}
+                                    Incluso: <strong>{% for s in plano.servicos_inclusos.all %}{{ s.nome }}{% if not forloop.last %} + {% endif %}{% endfor %}</strong>
+                                {% elif plano.inclui_barba %}
+                                    Incluso: <strong>Cabelo + Sobrancelha + Barba</strong>
+                                {% else %}
+                                    Incluso: <strong>Cabelo + Sobrancelha</strong>
+                                {% endif %}
+                            </li>
+                            <li class="mb-2 text-white">
+                                <i class="bi bi-shield-check text-warning me-2"></i> Isenção total do valor na visita
+                            </li>
+                            <li class="mb-2 text-white">
+                                <i class="bi bi-calendar-check text-warning me-2"></i> Agendamento prioritário online
+                            </li>
+                        </ul>
+
+                        <div class="mt-auto">
+                            {% if request.user.is_authenticated %}
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="plano_id" value="{{ plano.id }}">
+                                    <button type="submit" class="btn {% if plano.destaque %}btn-delacruz{% else %}btn-delacruz-outline{% endif %} w-100 py-3 fw-bold">
+                                        Assinar Plano Agora
+                                    </button>
+                                </form>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-delacruz w-100 py-3 fw-bold">
+                                    Entrar para Assinar
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <!-- Planos Padrão caso ainda não existam no banco -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card glass-card p-4 h-100 text-center">
+                        <h3 class="h4 text-white fw-bold">Delacruz Silver</h3>
+                        <div class="my-4">
+                            <span class="display-5 fw-bold text-gradient">R$ 69,90</span>
+                            <span class="text-secondary">/mês</span>
+                        </div>
+                        <p class="text-secondary small mb-4">Ideal para quem corta o cabelo de 15 em 15 dias.</p>
+                        <ul class="list-unstyled text-start text-secondary lh-lg mb-4 small mx-auto" style="max-width: 260px;">
+                            <li class="mb-2 text-white"><i class="bi bi-check-circle-fill text-warning me-2"></i> <strong>2 cortes de cabelo</strong> por mês</li>
+                            <li class="mb-2 text-white"><i class="bi bi-check-circle-fill text-warning me-2"></i> Agendamento Prioritário</li>
+                        </ul>
+                        <div class="mt-auto">
+                            <a href="{% url 'login' %}" class="btn btn-delacruz-outline w-100 py-3 fw-bold">Assinar Plano</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="card glass-card p-4 h-100 text-center border-warning shadow-lg">
+                        <div class="mb-2">
+                            <span class="badge bg-warning text-dark px-3 py-1 rounded-pill small fw-bold">RECOMENDADO</span>
+                        </div>
+                        <h3 class="h4 text-white fw-bold">Delacruz Gold VIP</h3>
+                        <div class="my-4">
+                            <span class="display-5 fw-bold text-gradient">R$ 139,90</span>
+                            <span class="text-secondary">/mês</span>
+                        </div>
+                        <p class="text-secondary small mb-4">A experiência completa com cabelo e barba sempre alinhados.</p>
+                        <ul class="list-unstyled text-start text-secondary lh-lg mb-4 small mx-auto" style="max-width: 260px;">
+                            <li class="mb-2 text-white"><i class="bi bi-check-circle-fill text-warning me-2"></i> <strong>4 cortes de cabelo</strong> por mês</li>
+                            <li class="mb-2 text-white"><i class="bi bi-check-circle-fill text-warning me-2"></i> <strong>Barba inclusa</strong></li>
+                            <li class="mb-2 text-white"><i class="bi bi-check-circle-fill text-warning me-2"></i> Bebida cortesia a cada visita</li>
+                        </ul>
+                        <div class="mt-auto">
+                            <a href="{% url 'login' %}" class="btn btn-delacruz w-100 py-3 fw-bold">Assinar Plano</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

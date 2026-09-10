@@ -1,0 +1,124 @@
+{% extends "website/modelo.html" %}
+
+{% block titulo_pagina %}Gerenciar Folgas e Bloqueios - Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-5 fw-bold mb-1"><span class="text-gradient">Folgas e Bloqueios de Horário</span></h1>
+                <p class="text-secondary mb-0">Trave horários avulsos ou dias inteiros para pausas, almoço ou folgas.</p>
+            </div>
+            <a href="{% url 'agendamentos_barbeiro' %}" class="btn btn-delacruz-outline btn-sm">
+                <i class="bi bi-arrow-left"></i> Meus Agendamentos
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <!-- Form Card -->
+            <div class="col-lg-5">
+                <div class="card glass-card p-4 border-warning">
+                    <h3 class="h5 text-warning mb-3"><i class="bi bi-calendar-plus"></i> Novo Bloqueio de Horário</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-white">Data do Bloqueio:</label>
+                            {{ form.data }}
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.dia_inteiro }}
+                            <label class="form-check-label text-white" for="id_dia_inteiro">
+                                Bloquear o <strong>Dia Inteiro</strong> (Folga completa)
+                            </label>
+                        </div>
+
+                        <div class="mb-3" id="horarioBlockContainer">
+                            <label class="form-label text-white">Horário Específico (se não for dia inteiro):</label>
+                            {{ form.horario }}
+                            <small class="text-secondary">Ex: 12:00 para pausa de almoço</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-white">Motivo:</label>
+                            {{ form.motivo }}
+                        </div>
+
+                        <button type="submit" class="btn btn-delacruz w-100 py-2">
+                            <i class="bi bi-lock-fill"></i> Confirmar Bloqueio
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- List of Current Blocks -->
+            <div class="col-lg-7">
+                <div class="card glass-card p-4">
+                    <h3 class="h5 text-white mb-3"><i class="bi bi-list-check"></i> Seus Bloqueios Cadastrados</h3>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover table-glass align-middle w-100">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tipo / Horário</th>
+                                    <th>Motivo</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for b in bloqueios %}
+                                    <tr>
+                                        <td class="fw-bold">{{ b.data|date:"d/m/Y" }}</td>
+                                        <td>
+                                            {% if b.dia_inteiro %}
+                                                <span class="badge bg-danger">Dia Inteiro</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">{{ b.horario|time:"H:i" }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-secondary">{{ b.motivo }}</td>
+                                        <td>
+                                            <form method="POST" action="{% url 'excluir_bloqueio_barbeiro' b.id %}" onsubmit="return confirm('Deseja liberar este horário?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Desbloquear">
+                                                    <i class="bi bi-trash"></i> Liberar
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            Nenhum bloqueio cadastrado. Todos os seus horários configurados estão disponíveis.
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var checkDiaInteiro = document.getElementById("id_dia_inteiro");
+    var containerHorario = document.getElementById("horarioBlockContainer");
+    if (checkDiaInteiro && containerHorario) {
+        checkDiaInteiro.addEventListener("change", function() {
+            if (this.checked) {
+                containerHorario.style.display = "none";
+            } else {
+                containerHorario.style.display = "block";
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

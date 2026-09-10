@@ -5,80 +5,228 @@
 {% block conteudo %}
 <section class="py-5">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-5">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
             <div>
                 <h1 class="display-5 fw-bold mb-1"><span class="text-gradient">Meus Agendamentos</span></h1>
-                <p class="text-secondary mb-0">Controle e confirme as solicitações dos seus clientes</p>
+                <p class="text-secondary mb-0">Controle completo de fila, presença, comanda de produtos e status dos clientes.</p>
             </div>
-            <a href="{% url 'area_barbeiro' %}" class="btn btn-delacruz-outline btn-sm">
-                <i class="bi bi-arrow-left"></i> Voltar ao Painel
-            </a>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'bloqueios_barbeiro' %}" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-calendar-x"></i> Gerenciar Folgas / Bloqueios
+                </a>
+                <a href="{% url 'area_barbeiro' %}" class="btn btn-delacruz-outline btn-sm">
+                    <i class="bi bi-arrow-left"></i> Painel do Barbeiro
+                </a>
+            </div>
         </div>
 
         <div class="card glass-card p-4">
             <div class="table-responsive">
-                <table class="table table-hover table-glass w-100">
+                <table class="table table-hover table-glass w-100 align-middle">
                     <thead>
                         <tr>
                             <th>Cliente</th>
-                            <th>Telefone</th>
+                            <th>Contato / WhatsApp</th>
                             <th>Serviço</th>
-                            <th>Data</th>
-                            <th>Horário</th>
-                            <th>Preço</th>
-                            <th>Status</th>
-                            <th>Ações de Confirmação</th>
+                            <th>Data & Hora</th>
+                            <th>Ficha Técnica</th>
+                            <th>Presença & Cadeira</th>
+                            <th>Comanda / Total</th>
+                            <th>Status & Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for a in agendamentos %}
                             <tr>
-                                <td class="fw-bold">{{ a.cliente.nome }}</td>
-                                <td class="text-secondary small">{{ a.cliente.telefone }}</td>
-                                <td>{{ a.servico.nome }}</td>
-                                <td>{{ a.data|date:"d/m/Y" }}</td>
-                                <td>{{ a.horario|time:"H:i" }}</td>
-                                <td class="text-success fw-bold">R$ {{ a.servico.preco }}</td>
+                                <!-- Cliente -->
                                 <td>
-                                    {% if a.status == 'pendente' %}
-                                        <span class="badge bg-warning text-dark">Pendente</span>
-                                    {% elif a.status == 'confirmado' %}
-                                        <span class="badge bg-info text-dark">Confirmado</span>
-                                    {% elif a.status == 'concluido' %}
-                                        <span class="badge bg-success">Concluído</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Cancelado</span>
+                                    <span class="fw-bold text-white d-block">{{ a.cliente.nome }}</span>
+                                    {% if a.observacoes %}
+                                        <small class="text-muted d-block text-truncate" style="max-width: 160px;" title="{{ a.observacoes }}">
+                                            Obs: {{ a.observacoes }}
+                                        </small>
                                     {% endif %}
                                 </td>
+
+                                <!-- Contato / WhatsApp -->
                                 <td>
+                                    <span class="text-secondary small d-block">{{ a.cliente.telefone }}</span>
+                                    <!-- Botão WhatsApp com mensagem pré-configurada -->
+                                    <a href="https://api.whatsapp.com/send?phone=55{{ a.cliente.telefone|cut:' '|cut:'('|cut:')'|cut:'-' }}&text=Ol%C3%A1%20{{ a.cliente.nome|urlencode }}!%20Confirmamos%20seu%20hor%C3%A1rio%20na%20Delacruz%20Barber%20para%20o%20dia%20{{ a.data|date:'d/m/Y' }}%20%C3%A0s%20{{ a.horario|time:'H:i' }}." 
+                                       target="_blank" 
+                                       class="btn btn-success btn-sm py-0 px-2 mt-1" 
+                                       style="font-size: 0.75rem;">
+                                        <i class="bi bi-whatsapp"></i> Chamar
+                                    </a>
+                                </td>
+
+                                <!-- Serviço -->
+                                <td>
+                                    <span class="text-white fw-bold">{{ a.servico.nome }}</span>
+                                    <div class="small text-secondary">R$ {{ a.servico.preco }}</div>
+                                </td>
+
+                                <!-- Data & Horário -->
+                                <td>
+                                    <span class="d-block">{{ a.data|date:"d/m/Y" }}</span>
+                                    <strong class="text-warning">{{ a.horario|time:"H:i" }}</strong>
+                                </td>
+
+                                <!-- Ficha Técnica do Cliente -->
+                                <td>
+                                    <a href="{% url 'ficha_cliente' a.cliente.id %}" class="btn btn-outline-info btn-sm" title="Ver ou editar corte habitual e preferências">
+                                        <i class="bi bi-journal-text"></i> Ficha
+                                    </a>
+                                </td>
+
+                                <!-- Presença (Check-in) & Cadeira (Em Atendimento) -->
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <!-- Checkin Button -->
+                                        <form method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                                            <input type="hidden" name="action" value="toggle_checkin">
+                                            {% if a.checkin_realizado %}
+                                                <button type="submit" class="badge bg-success border-0 w-100" title="Cliente já chegou na barbearia">
+                                                    <i class="bi bi-check-circle"></i> No Salão
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="badge bg-secondary border-0 w-100" title="Marcar presença do cliente">
+                                                    <i class="bi bi-geo-alt"></i> Marcar Chegada
+                                                </button>
+                                            {% endif %}
+                                        </form>
+
+                                        <!-- Em Atendimento Button -->
+                                        <form method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                                            <input type="hidden" name="action" value="toggle_atendimento">
+                                            {% if a.em_atendimento %}
+                                                <button type="submit" class="badge bg-primary border-0 w-100" title="Cliente sendo atendido agora">
+                                                    <i class="bi bi-scissors"></i> Na Cadeira
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="badge bg-dark border border-secondary text-secondary w-100" title="Iniciar atendimento na cadeira">
+                                                    <i class="bi bi-play-circle"></i> Iniciar Corte
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </td>
+
+                                <!-- Comanda de Produtos e Valor Total -->
+                                <td>
+                                    <div class="text-success fw-bold">R$ {{ a.valor_final }}</div>
+                                    {% if a.vendas_produtos.exists %}
+                                        <div class="small text-secondary mb-1">
+                                            {% for vp in a.vendas_produtos.all %}
+                                                <span class="d-block">+ {{ vp.quantidade }}x {{ vp.produto.nome }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Botão para Adicionar Produto na Comanda -->
+                                    <button type="button" class="btn btn-outline-warning btn-sm py-0 px-1 mt-1" data-bs-toggle="modal" data-bs-target="#modalComanda{{ a.id }}" style="font-size: 0.72rem;">
+                                        <i class="bi bi-cart-plus"></i> + Produto
+                                    </button>
+
+                                    <!-- Modal da Comanda -->
+                                    <div class="modal fade" id="modalComanda{{ a.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content bg-dark text-white border-warning">
+                                                <div class="modal-header border-secondary">
+                                                    <h5 class="modal-title h6 text-warning"><i class="bi bi-bag-plus"></i> Adicionar Produto à Comanda</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form method="POST" action="{% url 'adicionar_comanda' a.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="modal-body">
+                                                        <p class="small text-secondary mb-3">Cliente: <strong>{{ a.cliente.nome }}</strong></p>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label small">Produto (Pomada, Cerveja, etc.):</label>
+                                                            <select name="produto_id" class="form-select bg-dark text-white border-secondary" required>
+                                                                {% for p in produtos_disponiveis %}
+                                                                    <option value="{{ p.id }}">{{ p.nome }} - R$ {{ p.preco }} (Estoque: {{ p.estoque }})</option>
+                                                                {% empty %}
+                                                                    <option value="">Nenhum produto cadastrado no estoque</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label small">Quantidade:</label>
+                                                            <input type="number" name="quantidade" value="1" min="1" class="form-control bg-dark text-white border-secondary">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-secondary">
+                                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+                                                        <button type="submit" class="btn btn-warning btn-sm">Lançar na Comanda</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Status & Ações de Fluxo -->
+                                <td>
+                                    <div class="mb-2">
+                                        {% if a.status == 'pendente' %}
+                                            <span class="badge bg-warning text-dark">Pendente</span>
+                                        {% elif a.status == 'confirmado' %}
+                                            <span class="badge bg-info text-dark">Confirmado</span>
+                                        {% elif a.status == 'concluido' %}
+                                            <span class="badge bg-success">Concluído</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Cancelado</span>
+                                        {% endif %}
+
+                                        {% if a.status_pagamento == 'pago' %}
+                                            <span class="badge bg-success-subtle text-success border border-success ms-1">Pago</span>
+                                        {% else %}
+                                            <form method="POST" class="d-inline ms-1">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                                                <input type="hidden" name="action" value="marcar_pago">
+                                                <button type="submit" class="badge bg-secondary border-0" title="Marcar como Pago">Pagar</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+
                                     {% if a.status == 'pendente' %}
-                                        <div class="d-flex gap-2">
+                                        <div class="d-flex gap-1">
                                             <form method="POST" class="d-inline">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="agendamento_id" value="{{ a.id }}">
                                                 <input type="hidden" name="status" value="confirmado">
-                                                <button type="submit" class="btn btn-sm btn-info text-dark">Confirmar</button>
+                                                <button type="submit" class="btn btn-sm btn-info text-dark py-1 px-2" style="font-size: 0.8rem;">Confirmar</button>
                                             </form>
                                             <form method="POST" class="d-inline">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="agendamento_id" value="{{ a.id }}">
                                                 <input type="hidden" name="status" value="cancelado">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Recusar</button>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.8rem;">Recusar</button>
                                             </form>
                                         </div>
                                     {% elif a.status == 'confirmado' %}
-                                        <div class="d-flex gap-2">
+                                        <div class="d-flex gap-1">
                                             <form method="POST" class="d-inline">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="agendamento_id" value="{{ a.id }}">
                                                 <input type="hidden" name="status" value="concluido">
-                                                <button type="submit" class="btn btn-sm btn-success">Concluir</button>
+                                                <button type="submit" class="btn btn-sm btn-success py-1 px-2" style="font-size: 0.8rem;">
+                                                    <i class="bi bi-check2"></i> Concluir
+                                                </button>
                                             </form>
                                             <form method="POST" class="d-inline">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="agendamento_id" value="{{ a.id }}">
                                                 <input type="hidden" name="status" value="cancelado">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.8rem;">Cancelar</button>
                                             </form>
                                         </div>
                                     {% else %}
@@ -89,7 +237,8 @@
                         {% empty %}
                             <tr>
                                 <td colspan="8" class="text-center text-muted py-5">
-                                    Nenhum agendamento ativo encontrado.
+                                    <i class="bi bi-calendar2-check fs-2 d-block mb-2 text-secondary"></i>
+                                    Nenhum agendamento ativo encontrado para sua agenda.
                                 </td>
                             </tr>
                         {% endfor %}

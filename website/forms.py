@@ -5,7 +5,9 @@ from django.core.exceptions import ValidationError
 from .models import (
     PerfilUsuario, Servico, Barbeiro, Cliente,
     HorarioDisponivel, Agendamento, MensagemContato,
-    Feedback, FotoTrabalho
+    Feedback, FotoTrabalho, CupomDesconto, Produto,
+    VendaProduto, BloqueioHorarioBarbeiro, FichaCliente,
+    FilaEspera, PlanoAssinatura, AssinaturaCliente
 )
 
 def clean_telefone_campo(telefone):
@@ -221,8 +223,8 @@ class AgendamentoPublicoForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date", "class": "form-control"})
     )
     horario = forms.TimeField(
-        label="Horário",
-        widget=forms.HiddenInput(attrs={"id": "id_horario_input"})
+        label="Horário Escolhido",
+        widget=forms.TimeInput(attrs={"type": "time", "class": "form-control fw-bold text-center", "id": "id_horario_input"})
     )
     nome = forms.CharField(
         label="Nome Completo",
@@ -242,6 +244,20 @@ class AgendamentoPublicoForm(forms.Form):
     email = forms.EmailField(
         label="E-mail para Confirmação",
         widget=forms.EmailInput(attrs={"placeholder": "seu.email@exemplo.com", "class": "form-control"})
+    )
+    metodo_pagamento = forms.ChoiceField(
+        label="Forma de Pagamento",
+        choices=[
+            ("pix", "PIX"),
+            ("cartao", "Cartão"),
+            ("dinheiro", "Dinheiro"),
+        ],
+        widget=forms.Select(attrs={"class": "form-select"})
+    )
+    cupom_codigo = forms.CharField(
+        label="Cupom de Desconto / Código de Amigo",
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "Ex: DELACRUZ10 ou código do amigo", "class": "form-control"})
     )
     observacoes = forms.CharField(
         label="Observações Adicionais",
@@ -327,3 +343,83 @@ class PerfilClienteForm(forms.ModelForm):
 
     def clean_telefone(self):
         return clean_telefone_campo(self.cleaned_data.get("telefone", ""))
+
+
+class BloqueioHorarioForm(forms.ModelForm):
+    class Meta:
+        model = BloqueioHorarioBarbeiro
+        fields = ["data", "horario", "dia_inteiro", "motivo"]
+        widgets = {
+            "data": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "horario": forms.TimeInput(attrs={"type": "time", "class": "form-control"}),
+            "dia_inteiro": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "motivo": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ex: Almoço, Consulta médica, Folga"}),
+        }
+
+
+class FichaClienteForm(forms.ModelForm):
+    class Meta:
+        model = FichaCliente
+        fields = ["estilo_corte", "produtos_preferidos", "observacoes_tecnicas"]
+        widgets = {
+            "estilo_corte": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ex: Degradê navalhado alto, tesoura em cima"}),
+            "produtos_preferidos": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ex: Pomada matte, óleo de barba amadeirado"}),
+            "observacoes_tecnicas": forms.Textarea(attrs={"rows": 3, "class": "form-control", "placeholder": "Ex: Pele sensível na gola, redemoinho frontal..."}),
+        }
+
+
+class FilaEsperaForm(forms.ModelForm):
+    class Meta:
+        model = FilaEspera
+        fields = ["barbeiro", "data_desejada", "turno", "observacoes"]
+        widgets = {
+            "barbeiro": forms.Select(attrs={"class": "form-select"}),
+            "data_desejada": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "turno": forms.Select(attrs={"class": "form-select"}),
+            "observacoes": forms.Textarea(attrs={"rows": 3, "class": "form-control", "placeholder": "Preferências de horário ou detalhes..."}),
+        }
+
+
+class VendaProdutoRapidaForm(forms.Form):
+    produto = forms.ModelChoiceField(
+        queryset=Produto.objects.filter(ativo=True, estoque__gt=0),
+        label="Selecione o Produto",
+        widget=forms.Select(attrs={"class": "form-select"})
+    )
+    quantidade = forms.IntegerField(
+        min_value=1,
+        initial=1,
+        label="Quantidade",
+        widget=forms.NumberInput(attrs={"class": "form-control", "min": 1})
+    )
+
+
+class CupomDescontoForm(forms.ModelForm):
+    class Meta:
+        model = CupomDesconto
+        fields = ["codigo", "tipo", "valor", "limite_uso", "ativo", "validade"]
+        widgets = {
+            "codigo": forms.TextInput(attrs={"class": "form-control", "placeholder": "EX: DELACRUZ10"}),
+            "tipo": forms.Select(attrs={"class": "form-select"}),
+            "valor": forms.NumberInput(attrs={"class": "form-control"}),
+            "limite_uso": forms.NumberInput(attrs={"class": "form-control"}),
+            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "validade": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        }
+
+
+class PlanoAssinaturaForm(forms.ModelForm):
+    class Meta:
+        model = PlanoAssinatura
+        fields = ["nome", "descricao", "preco_mensal", "cortes_por_mes", "inclui_barba", "destaque", "ativo", "ordem"]
+        widgets = {
+            "nome": forms.TextInput(attrs={"class": "form-control"}),
+            "descricao": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
+            "preco_mensal": forms.NumberInput(attrs={"class": "form-control"}),
+            "cortes_por_mes": forms.NumberInput(attrs={"class": "form-control"}),
+            "inclui_barba": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "destaque": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "ordem": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+

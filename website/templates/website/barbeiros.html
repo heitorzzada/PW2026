@@ -16,8 +16,14 @@
                     <div class="card glass-card p-4 h-100">
                         <div class="d-flex flex-column flex-sm-row gap-4 align-items-center align-items-sm-start">
                             <div class="text-center">
-                                <div class="bg-dark rounded-circle d-flex align-items-center justify-content-center border border-secondary" style="width: 100px; height: 100px;">
-                                    <i class="bi bi-person-fill fs-1 text-secondary"></i>
+                                <div class="barber-avatar-wrap">
+                                    {% if barbeiro.imagem_url %}
+                                        <img src="{{ barbeiro.imagem_url }}" alt="{{ barbeiro.nome }}" class="barber-avatar-img" style="width: 100px; height: 100px;">
+                                    {% else %}
+                                        <div class="bg-dark rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 100px; height: 100px; border: 2px solid #fde047;">
+                                            <i class="bi bi-person-fill fs-1 text-warning"></i>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="flex-grow-1 text-center text-sm-start">
@@ -25,7 +31,9 @@
                                 <span class="badge-delacruz mb-3 d-inline-block">{{ barbeiro.cargo }}</span>
                                 <p class="text-secondary small mb-2"><strong>Especialidade:</strong> {{ barbeiro.especialidade }}</p>
                                 <p class="text-secondary small mb-3">{{ barbeiro.descricao_curta }}</p>
-                                <a href="{% url 'agendamento' %}" class="btn btn-delacruz btn-sm">Agendar com {{ barbeiro.nome }}</a>
+                                <a href="{% url 'agendamento' %}?barbeiro={{ barbeiro.id }}" class="btn btn-delacruz btn-sm">
+                                    <i class="bi bi-calendar-check me-1"></i> Agendar com {{ barbeiro.nome }}
+                                </a>
                             </div>
                         </div>
                     </div>
