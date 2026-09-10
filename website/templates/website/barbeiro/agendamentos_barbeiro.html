@@ -123,53 +123,15 @@
                                     {% if a.vendas_produtos.exists %}
                                         <div class="small text-secondary mb-1">
                                             {% for vp in a.vendas_produtos.all %}
-                                                <span class="d-block">+ {{ vp.quantidade }}x {{ vp.produto.nome }}</span>
+                                                <span class="d-block text-white-50">+ {{ vp.quantidade }}x {{ vp.produto.nome }}</span>
                                             {% endfor %}
                                         </div>
                                     {% endif %}
                                     
-                                    <!-- Botão para Adicionar Produto na Comanda -->
-                                    <button type="button" class="btn btn-outline-warning btn-sm py-0 px-1 mt-1" data-bs-toggle="modal" data-bs-target="#modalComanda{{ a.id }}" style="font-size: 0.72rem;">
-                                        <i class="bi bi-cart-plus"></i> + Produto
+                                    <!-- Botão para Abrir Comanda / Editar Produtos -->
+                                    <button type="button" class="btn btn-outline-warning btn-sm py-0 px-2 mt-1" data-bs-toggle="modal" data-bs-target="#modalComanda{{ a.id }}" style="font-size: 0.75rem;">
+                                        <i class="bi bi-cart-plus me-1"></i> Comanda {% if a.vendas_produtos.exists %}<span class="badge bg-warning text-dark px-1 ms-1">{{ a.vendas_produtos.count }}</span>{% endif %}
                                     </button>
-
-                                    <!-- Modal da Comanda -->
-                                    <div class="modal fade" id="modalComanda{{ a.id }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content bg-dark text-white border-warning">
-                                                <div class="modal-header border-secondary">
-                                                    <h5 class="modal-title h6 text-warning"><i class="bi bi-bag-plus"></i> Adicionar Produto à Comanda</h5>
-                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form method="POST" action="{% url 'adicionar_comanda' a.id %}">
-                                                    {% csrf_token %}
-                                                    <div class="modal-body">
-                                                        <p class="small text-secondary mb-3">Cliente: <strong>{{ a.cliente.nome }}</strong></p>
-                                                        
-                                                        <div class="mb-3">
-                                                            <label class="form-label small">Produto (Pomada, Cerveja, etc.):</label>
-                                                            <select name="produto_id" class="form-select bg-dark text-white border-secondary" required>
-                                                                {% for p in produtos_disponiveis %}
-                                                                    <option value="{{ p.id }}">{{ p.nome }} - R$ {{ p.preco }} (Estoque: {{ p.estoque }})</option>
-                                                                {% empty %}
-                                                                    <option value="">Nenhum produto cadastrado no estoque</option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <label class="form-label small">Quantidade:</label>
-                                                            <input type="number" name="quantidade" value="1" min="1" class="form-control bg-dark text-white border-secondary">
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer border-secondary">
-                                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
-                                                        <button type="submit" class="btn btn-warning btn-sm">Lançar na Comanda</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </td>
 
                                 <!-- Status & Ações de Fluxo -->
@@ -248,4 +210,105 @@
         </div>
     </div>
 </section>
+
+<!-- MODAIS DE COMANDA (Colocados FORA da tabela para evitar bugs de backdrop no Bootstrap) -->
+{% for a in agendamentos %}
+<div class="modal fade" id="modalComanda{{ a.id }}" tabindex="-1" aria-labelledby="modalComandaLabel{{ a.id }}" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card text-white border border-warning shadow-lg" style="background-color: #0f172a !important; border-radius: 16px;">
+            <div class="modal-header border-secondary border-opacity-50">
+                <h5 class="modal-title h6 text-warning mb-0" id="modalComandaLabel{{ a.id }}">
+                    <i class="bi bi-bag-check-fill me-2"></i>Comanda: {{ a.cliente.nome }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Resumo Atual do Atendimento -->
+                <div class="p-3 rounded bg-black bg-opacity-40 border border-secondary border-opacity-25 mb-4">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-white-50">Serviço:</span>
+                        <span class="text-white fw-semibold">{{ a.servico.nome }} (R$ {{ a.valor_total }})</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-white-50">Produtos na Comanda:</span>
+                        <span class="text-warning fw-semibold">+ R$ {{ a.total_produtos_venda }}</span>
+                    </div>
+                    {% if a.desconto_aplicado > 0 %}
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-white-50">Desconto:</span>
+                            <span class="text-danger fw-semibold">- R$ {{ a.desconto_aplicado }}</span>
+                        </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between fw-bold pt-2 border-top border-secondary border-opacity-25 mt-2">
+                        <span class="text-white">Total a Cobrar:</span>
+                        <span class="text-success fs-5">R$ {{ a.valor_final }}</span>
+                    </div>
+                </div>
+
+                <!-- Itens já adicionados (Editáveis com botão de exclusão) -->
+                {% if a.vendas_produtos.exists %}
+                    <h6 class="text-warning small text-uppercase fw-bold mb-2">
+                        <i class="bi bi-list-check me-1"></i> Itens Lançados nesta Comanda
+                    </h6>
+                    <div class="list-group mb-4">
+                        {% for vp in a.vendas_produtos.all %}
+                            <div class="list-group-item bg-dark text-white border-secondary border-opacity-50 d-flex justify-content-between align-items-center p-2 mb-1 rounded">
+                                <div>
+                                    <span class="fw-semibold text-white">{{ vp.quantidade }}x {{ vp.produto.nome }}</span>
+                                    <small class="text-white-50 d-block">R$ {{ vp.valor_total }} (R$ {{ vp.produto.preco }} cada)</small>
+                                </div>
+                                <form method="POST" action="{% url 'adicionar_comanda' a.id %}" class="d-inline mb-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="remover">
+                                    <input type="hidden" name="venda_id" value="{{ vp.id }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Remover produto da comanda" onclick="return confirm('Deseja remover este produto da comanda?');">
+                                        <i class="bi bi-trash"></i> Remover
+                                    </button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Formulário para Lançar Novo Produto -->
+                <h6 class="text-warning small text-uppercase fw-bold mb-2">
+                    <i class="bi bi-plus-circle me-1"></i> Lançar Produto na Comanda
+                </h6>
+                <form method="POST" action="{% url 'adicionar_comanda' a.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="adicionar">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small text-white-50">Produto (Pomada, Shampoo, etc.):</label>
+                        <select name="produto_id" class="form-select bg-dark text-white border-secondary" required>
+                            {% for p in produtos_disponiveis %}
+                                <option value="{{ p.id }}">
+                                    {{ p.nome }} — R$ {{ p.preco }} {% if p.estoque > 0 %}(Estoque: {{ p.estoque }}){% else %}(Disponível no Salão){% endif %}
+                                </option>
+                            {% empty %}
+                                <option value="">Nenhum produto cadastrado</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-5">
+                            <label class="form-label small text-white-50">Quantidade:</label>
+                            <input type="number" name="quantidade" value="1" min="1" max="50" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="col-7 d-flex align-items-end">
+                            <button type="submit" class="btn btn-warning w-100 py-2 fw-semibold">
+                                <i class="bi bi-cart-plus me-1"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-50">
+                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

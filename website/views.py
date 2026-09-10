@@ -679,7 +679,7 @@ class AgendamentosBarbeiroView(BarbeiroRequiredMixin, TemplateView):
             ).prefetch_related("vendas_produtos__produto").filter(
                 barbeiro=barbeiro
             ).order_by("data", "horario")
-            context["produtos_disponiveis"] = Produto.objects.filter(ativo=True, estoque__gt=0).order_by("nome")
+            context["produtos_disponiveis"] = Produto.objects.filter(ativo=True).order_by("nome")
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1435,12 +1435,38 @@ class ComandaAgendamentoView(BarbeiroRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         barbeiro = Barbeiro.objects.filter(usuario=self.request.user).first()
         agendamento = Agendamento.objects.filter(id=pk, barbeiro=barbeiro).first()
-        produto_id = request.POST.get("produto_id")
-        quantidade = int(request.POST.get("quantidade", 1))
+        if not agendamento:
+            messages.error(request, "Agendamento não encontrado.")
+            return redirect("agendamentos_barbeiro")
 
-        if agendamento and produto_id:
+        action = request.POST.get("action", "adicionar")
+
+        # Remover produto existente da comanda
+        if action == "remover":
+            venda_id = request.POST.get("venda_id")
+            venda = VendaProduto.objects.filter(id=venda_id, agendamento=agendamento).first()
+            if venda:
+                nome_p = venda.produto.nome if venda.produto else "Produto"
+                if venda.produto and venda.produto.estoque is not None:
+                    venda.produto.estoque += venda.quantidade
+                    venda.produto.save()
+                venda.delete()
+                messages.success(request, f"{nome_p} removido da comanda! 🗑️")
+            else:
+                messages.error(request, "Item da comanda não encontrado.")
+            return redirect("agendamentos_barbeiro")
+
+        # Adicionar novo produto à comanda
+        produto_id = request.POST.get("produto_id")
+        try:
+            quantidade = int(request.POST.get("quantidade", 1))
+        except (ValueError, TypeError):
+            quantidade = 1
+
+        if produto_id:
             produto = Produto.objects.filter(id=produto_id, ativo=True).first()
-            if produto and produto.estoque >= quantidade:
+            if produto:
+                quantidade = max(1, quantidade)
                 valor_total = float(produto.preco) * quantidade
                 VendaProduto.objects.create(
                     produto=produto,
@@ -1450,11 +1476,12 @@ class ComandaAgendamentoView(BarbeiroRequiredMixin, View):
                     quantidade=quantidade,
                     valor_total=valor_total
                 )
-                produto.estoque -= quantidade
-                produto.save()
-                messages.success(request, f"{quantidade}x {produto.nome} adicionado à comanda! 🛒")
+                if produto.estoque and produto.estoque > 0:
+                    produto.estoque = max(0, produto.estoque - quantidade)
+                    produto.save()
+                messages.success(request, f"{quantidade}x {produto.nome} lançado na comanda! 🛒")
             else:
-                messages.error(request, "Produto fora de estoque ou inválido.")
+                messages.error(request, "Produto selecionado é inválido.")
         return redirect("agendamentos_barbeiro")
 
 
