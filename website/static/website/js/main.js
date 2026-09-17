@@ -390,4 +390,90 @@ document.addEventListener("DOMContentLoaded", function () {
             fetchAvailableTimes();
         }
     }
+
+    // =========================================================
+    // DELACRUZ REELS (VÍDEOS DE CORTES EM MOVIMENTO)
+    // =========================================================
+    const reelCards = document.querySelectorAll('.reel-card');
+    
+    reelCards.forEach(card => {
+        const video = card.querySelector('.reel-video');
+        const playBtn = card.querySelector('.reel-center-play');
+        const muteBtn = card.querySelector('.reel-mute-btn');
+        if (!video) return;
+
+        function togglePlay() {
+            if (video.paused) {
+                // Pausa outros vídeos para não sobrepor
+                document.querySelectorAll('.reel-video').forEach(other => {
+                    if (other !== video && !other.paused) {
+                        other.pause();
+                        other.closest('.reel-card')?.classList.remove('is-playing');
+                    }
+                });
+                video.play().then(() => {
+                    card.classList.add('is-playing');
+                }).catch(e => console.log('Autoplay bloqueado pelo navegador:', e));
+            } else {
+                video.pause();
+                card.classList.remove('is-playing');
+            }
+        }
+
+        video.addEventListener('click', togglePlay);
+        if (playBtn) playBtn.addEventListener('click', togglePlay);
+
+        if (muteBtn) {
+            muteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                video.muted = !video.muted;
+                const icon = muteBtn.querySelector('i');
+                if (icon) {
+                    if (video.muted) {
+                        icon.className = 'bi bi-volume-mute-fill';
+                    } else {
+                        icon.className = 'bi bi-volume-up-fill text-warning';
+                        if (video.paused) togglePlay();
+                    }
+                }
+            });
+        }
+
+        video.addEventListener('play', () => card.classList.add('is-playing'));
+        video.addEventListener('pause', () => card.classList.remove('is-playing'));
+    });
+
+    // Auto-play suave silenciado ao rolar a página para a seção (IntersectionObserver)
+    if ('IntersectionObserver' in window && reelCards.length > 0) {
+        const reelObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const card = entry.target;
+                const video = card.querySelector('.reel-video');
+                if (!video) return;
+                if (entry.isIntersecting) {
+                    video.muted = true;
+                    video.play().then(() => {
+                        card.classList.add('is-playing');
+                    }).catch(() => {});
+                } else {
+                    video.pause();
+                    card.classList.remove('is-playing');
+                }
+            });
+        }, { threshold: 0.35 });
+
+        reelCards.forEach(card => reelObserver.observe(card));
+    }
+
+    // Pausa qualquer vídeo dentro de modais ao fechar o modal
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function () {
+            const v = modal.querySelector('video');
+            if (v) {
+                v.pause();
+                v.currentTime = 0;
+            }
+        });
+    });
 });
+

@@ -24,7 +24,10 @@
                         <i class="bi bi-calendar-check me-2"></i> Agendar Agora
                     </a>
                     <a href="#galeria" class="btn btn-delacruz-outline btn-lg px-4 py-3">
-                        <i class="bi bi-images me-2"></i> Ver Nossos Cortes
+                        <i class="bi bi-images me-2"></i> Fotos
+                    </a>
+                    <a href="#reels" class="btn btn-outline-warning btn-lg px-4 py-3 d-inline-flex align-items-center gap-2" style="border-radius: 10px; font-weight: 600;">
+                        <i class="bi bi-play-circle-fill fs-5"></i> Assistir Vídeos
                     </a>
                 </div>
                 
@@ -245,6 +248,239 @@
         </div>
     </div>
 </section>
+
+<!-- 0. DELACRUZ REELS (CORTES EM VÍDEO) -->
+<section id="reels" class="py-5" style="background: radial-gradient(circle at 50% 30%, rgba(34, 197, 94, 0.08) 0%, rgba(9, 13, 22, 0.95) 100%);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2 rounded-pill fw-bold mb-3 d-inline-flex align-items-center gap-2 shadow-sm">
+                <span class="spinner-grow spinner-grow-sm text-warning" role="status" aria-hidden="true" style="width: 0.65rem; height: 0.65rem;"></span>
+                Delacruz Reels • Vídeos da Bancada
+            </span>
+            <h2 class="h1 mb-2"><span class="text-gradient">A Arte do Disfarce em Vídeo</span></h2>
+            <p class="text-muted">Veja a precisão da navalha, as transições de degradê e o acabamento dos nossos barbeiros em movimento</p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <!-- REEL 1 -->
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="reel-card" data-video-id="video1">
+                    <video id="video1" class="reel-video" playsinline loop muted preload="metadata">
+                        <source src="{% static 'videos/videocorte1.mp4' %}" type="video/mp4">
+                        Seu navegador não suporta vídeos HTML5.
+                    </video>
+                    
+                    <div class="reel-overlay"></div>
+
+                    <!-- Top Bar -->
+                    <div class="reel-top-bar">
+                        <span class="badge bg-dark bg-opacity-75 text-warning border border-warning border-opacity-50 small">
+                            <i class="bi bi-camera-video-fill me-1"></i> REEL #01
+                        </span>
+                        <button type="button" class="btn-reel-action reel-mute-btn" data-target="video1" title="Ativar/Desativar Som" aria-label="Alternar som">
+                            <i class="bi bi-volume-mute-fill"></i>
+                        </button>
+                    </div>
+
+                    <!-- Center Play Button -->
+                    <div class="reel-center-play" data-target="video1" title="Reproduzir/Pausar">
+                        <i class="bi bi-play-fill fs-2"></i>
+                    </div>
+
+                    <!-- Bottom Bar -->
+                    <div class="reel-bottom-bar">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small">
+                                <i class="bi bi-scissors me-1"></i> Danilo Delacruz
+                            </span>
+                            <span class="badge bg-dark bg-opacity-50 text-white-50 small">Degradê Navalhado</span>
+                        </div>
+                        <h3 class="h5 text-white fw-bold mb-1">Degradê Navalhado em Detalhes</h3>
+                        <p class="text-white-50 small mb-3">Transição milimétrica na navalha e encaixe suave no topo.</p>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'agendamento' %}" class="btn btn-sm btn-delacruz flex-grow-1">
+                                <i class="bi bi-calendar-check me-1"></i> Quero Esse Corte
+                            </a>
+                            <button type="button" class="btn btn-sm btn-delacruz-outline px-3 reel-fullscreen-btn" data-bs-toggle="modal" data-bs-target="#modalVideo1" title="Tela Cheia">
+                                <i class="bi bi-arrows-fullscreen"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REEL 2 -->
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="reel-card" data-video-id="video2">
+                    <video id="video2" class="reel-video" playsinline loop muted preload="metadata">
+                        <source src="{% static 'videos/videocorte2.mp4' %}" type="video/mp4">
+                        Seu navegador não suporta vídeos HTML5.
+                    </video>
+                    
+                    <div class="reel-overlay"></div>
+
+                    <!-- Top Bar -->
+                    <div class="reel-top-bar">
+                        <span class="badge bg-dark bg-opacity-75 text-warning border border-warning border-opacity-50 small">
+                            <i class="bi bi-camera-video-fill me-1"></i> REEL #02
+                        </span>
+                        <button type="button" class="btn-reel-action reel-mute-btn" data-target="video2" title="Ativar/Desativar Som" aria-label="Alternar som">
+                            <i class="bi bi-volume-mute-fill"></i>
+                        </button>
+                    </div>
+
+                    <!-- Center Play Button -->
+                    <div class="reel-center-play" data-target="video2" title="Reproduzir/Pausar">
+                        <i class="bi bi-play-fill fs-2"></i>
+                    </div>
+
+                    <!-- Bottom Bar -->
+                    <div class="reel-bottom-bar">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small">
+                                <i class="bi bi-scissors me-1"></i> Heitor Pontes
+                            </span>
+                            <span class="badge bg-dark bg-opacity-50 text-white-50 small">French Crop</span>
+                        </div>
+                        <h3 class="h5 text-white fw-bold mb-1">French Crop & Textura 360°</h3>
+                        <p class="text-white-50 small mb-3">Visão completa em rotação do corte, destacando o topo e a precisão da lateral.</p>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'agendamento' %}" class="btn btn-sm btn-delacruz flex-grow-1">
+                                <i class="bi bi-calendar-check me-1"></i> Quero Esse Corte
+                            </a>
+                            <button type="button" class="btn btn-sm btn-delacruz-outline px-3 reel-fullscreen-btn" data-bs-toggle="modal" data-bs-target="#modalVideo2" title="Tela Cheia">
+                                <i class="bi bi-arrows-fullscreen"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REEL 3 -->
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="reel-card" data-video-id="video3">
+                    <video id="video3" class="reel-video" playsinline loop muted preload="metadata">
+                        <source src="{% static 'videos/videocorte3.mp4' %}" type="video/mp4">
+                        Seu navegador não suporta vídeos HTML5.
+                    </video>
+                    
+                    <div class="reel-overlay"></div>
+
+                    <!-- Top Bar -->
+                    <div class="reel-top-bar">
+                        <span class="badge bg-dark bg-opacity-75 text-warning border border-warning border-opacity-50 small">
+                            <i class="bi bi-camera-video-fill me-1"></i> REEL #03
+                        </span>
+                        <button type="button" class="btn-reel-action reel-mute-btn" data-target="video3" title="Ativar/Desativar Som" aria-label="Alternar som">
+                            <i class="bi bi-volume-mute-fill"></i>
+                        </button>
+                    </div>
+
+                    <!-- Center Play Button -->
+                    <div class="reel-center-play" data-target="video3" title="Reproduzir/Pausar">
+                        <i class="bi bi-play-fill fs-2"></i>
+                    </div>
+
+                    <!-- Bottom Bar -->
+                    <div class="reel-bottom-bar">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small">
+                                <i class="bi bi-scissors me-1"></i> Danilo Delacruz
+                            </span>
+                            <span class="badge bg-dark bg-opacity-50 text-white-50 small">Taper Fade</span>
+                        </div>
+                        <h3 class="h5 text-white fw-bold mb-1">Taper Fade & Finalização na Régua</h3>
+                        <p class="text-white-50 small mb-3">Disfarçado suave nas têmporas e nuca para um visual refinado e moderno.</p>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'agendamento' %}" class="btn btn-sm btn-delacruz flex-grow-1">
+                                <i class="bi bi-calendar-check me-1"></i> Quero Esse Corte
+                            </a>
+                            <button type="button" class="btn btn-sm btn-delacruz-outline px-3 reel-fullscreen-btn" data-bs-toggle="modal" data-bs-target="#modalVideo3" title="Tela Cheia">
+                                <i class="bi bi-arrows-fullscreen"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MODAIS DE VÍDEO COMPLETO (TELA CHEIA) -->
+<div class="modal fade" id="modalVideo1" tabindex="-1" aria-labelledby="labelModalVideo1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card border border-warning border-opacity-50 text-white">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title text-warning" id="labelModalVideo1">
+                    <i class="bi bi-play-circle-fill me-2"></i> Degradê Navalhado em Detalhes
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center p-0 bg-black">
+                <video class="w-100" controls playsinline style="max-height: 75vh;">
+                    <source src="{% static 'videos/videocorte1.mp4' %}" type="video/mp4">
+                </video>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25 d-flex justify-content-between">
+                <span class="text-white-50 small"><i class="bi bi-person-fill text-warning me-1"></i> Feito por Danilo Delacruz</span>
+                <a href="{% url 'agendamento' %}" class="btn btn-delacruz">
+                    <i class="bi bi-calendar-check me-1"></i> Agendar Esse Corte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalVideo2" tabindex="-1" aria-labelledby="labelModalVideo2" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card border border-warning border-opacity-50 text-white">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title text-warning" id="labelModalVideo2">
+                    <i class="bi bi-play-circle-fill me-2"></i> French Crop & Textura 360°
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center p-0 bg-black">
+                <video class="w-100" controls playsinline style="max-height: 75vh;">
+                    <source src="{% static 'videos/videocorte2.mp4' %}" type="video/mp4">
+                </video>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25 d-flex justify-content-between">
+                <span class="text-white-50 small"><i class="bi bi-person-fill text-warning me-1"></i> Feito por Heitor Pontes</span>
+                <a href="{% url 'agendamento' %}" class="btn btn-delacruz">
+                    <i class="bi bi-calendar-check me-1"></i> Agendar Esse Corte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalVideo3" tabindex="-1" aria-labelledby="labelModalVideo3" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card border border-warning border-opacity-50 text-white">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title text-warning" id="labelModalVideo3">
+                    <i class="bi bi-play-circle-fill me-2"></i> Taper Fade & Finalização na Régua
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center p-0 bg-black">
+                <video class="w-100" controls playsinline style="max-height: 75vh;">
+                    <source src="{% static 'videos/videocorte3.mp4' %}" type="video/mp4">
+                </video>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25 d-flex justify-content-between">
+                <span class="text-white-50 small"><i class="bi bi-person-fill text-warning me-1"></i> Feito por Danilo Delacruz</span>
+                <a href="{% url 'agendamento' %}" class="btn btn-delacruz">
+                    <i class="bi bi-calendar-check me-1"></i> Agendar Esse Corte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- 1. A EXPERIÊNCIA DELACRUZ (DIFERENCIAIS) -->
 <section id="experiencia" class="py-5">
