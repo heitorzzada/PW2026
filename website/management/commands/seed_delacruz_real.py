@@ -4,7 +4,7 @@ from django.contrib.auth.models import User, Group
 from decimal import Decimal
 from datetime import time
 from website.models import (
-    Servico, Produto, PlanoAssinatura, Barbeiro, HorarioDisponivel, PerfilUsuario
+    Servico, Produto, PlanoAssinatura, Barbeiro, HorarioDisponivel, PerfilUsuario, FotoTrabalho
 )
 
 
@@ -288,8 +288,83 @@ class Command(BaseCommand):
                         criados_count += 1
                 self.stdout.write(f"  * Barbeiro {b.nome}: 28 slots de 08:00 a 21:30 garantidos (+{criados_count} novos).")
 
+            # 5. FOTOS REAIS DE TRABALHOS (GALERIA)
+            self.stdout.write("\n[5/5] Configurando Galeria de Fotos de Trabalhos...")
+            fotos_config = [
+                {
+                    "titulo": "Taper Fade em Cachos com Luzes",
+                    "descricao": "Corte moderno com degradê suave na nuca, valorizando os cachos naturais com pontas iluminadas.",
+                    "imagem": "trabalhos/cachos_luzes_taper.jpg",
+                    "categoria": "corte",
+                    "barbeiro_query": "Danilo"
+                },
+                {
+                    "titulo": "Mid Fade com French Crop",
+                    "descricao": "Degradê médio limpo na régua com topo texturizado e encaixe perfeito no perfil.",
+                    "imagem": "trabalhos/mid_fade_crop.jpg",
+                    "categoria": "corte",
+                    "barbeiro_query": "Heitor"
+                },
+                {
+                    "titulo": "Low Fade Texturizado Alinhado",
+                    "descricao": "Disfarçado preciso com alinhamento frontal afiado e topo com textura moderna.",
+                    "imagem": "trabalhos/low_fade_texturizado.jpg",
+                    "categoria": "corte",
+                    "barbeiro_query": "Danilo"
+                },
+                {
+                    "titulo": "Low Fade com Linhas Freestyle",
+                    "descricao": "Degradê baixo na régua com desenho navalhado personalizado e acabamento impecável.",
+                    "imagem": "trabalhos/tribal_wave_fade.jpg",
+                    "categoria": "corte",
+                    "barbeiro_query": "Heitor"
+                },
+                {
+                    "titulo": "Mid Fade com Risco Raio em Cachos",
+                    "descricao": "Disfarçado médio com detalhe de raio navalhado, valorizando a textura e volume dos cachos.",
+                    "imagem": "trabalhos/freestyle_raio_curls.jpg",
+                    "categoria": "corte",
+                    "barbeiro_query": "Heitor"
+                },
+                {
+                    "titulo": "Taper Fade com Acabamento Preciso",
+                    "descricao": "Taper clássico nas costeletas e nuca, perfeito para quem busca discrição e elegância.",
+                    "imagem": "trabalhos/taper_fade_delacruz.jpg",
+                    "categoria": "corte",
+                    "barbeiro_query": "Heitor"
+                },
+            ]
+
+            for fdata in fotos_config:
+                barb = Barbeiro.objects.filter(nome__icontains=fdata["barbeiro_query"]).first() or Barbeiro.objects.first()
+                if not barb:
+                    barb = Barbeiro.objects.create(
+                        nome="Heitor Pontes" if "Heitor" in fdata["barbeiro_query"] else "Danilo Delacruz",
+                        especialidade="Especialista em Cortes & Degradê",
+                        descricao_curta="Profissional especialista da Delacruz Barber.",
+                        ativo=True
+                    )
+                foto_obj = FotoTrabalho.objects.filter(titulo=fdata["titulo"]).first()
+                if not foto_obj:
+                    FotoTrabalho.objects.create(
+                        barbeiro=barb,
+                        titulo=fdata["titulo"],
+                        descricao=fdata["descricao"],
+                        imagem=fdata["imagem"],
+                        categoria=fdata["categoria"],
+                        publicado=True
+                    )
+                    self.stdout.write(self.style.SUCCESS(f"  + Foto adicionada: {fdata['titulo']} ({barb.nome})"))
+                else:
+                    foto_obj.imagem = fdata["imagem"]
+                    foto_obj.descricao = fdata["descricao"]
+                    foto_obj.barbeiro = barb
+                    foto_obj.publicado = True
+                    foto_obj.save()
+                    self.stdout.write(f"  * Foto atualizada: {fdata['titulo']}")
+
             if dry_run:
                 self.stdout.write(self.style.WARNING("\n--- MODO DRY-RUN: Revertendo transação. Nenhuma gravação persistida. ---"))
                 transaction.set_rollback(True)
             else:
-                self.stdout.write(self.style.SUCCESS("\nCatálogo Delacruz Barber e Grade de Horários configurados com sucesso!"))
+                self.stdout.write(self.style.SUCCESS("\nCatálogo Delacruz Barber, Fotos e Grade configurados com sucesso!"))
