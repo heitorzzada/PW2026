@@ -1,46 +1,55 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // 1. Phone number masking logic
-    const phoneInputs = document.querySelectorAll(".phone-mask");
+$(document).ready(function () {
+    // =========================================================
+    // PLUGIN JQUERY 1: JQUERY MASK PLUGIN (Requisito 3º Trimestre)
+    // =========================================================
+    if ($.fn.mask) {
+        var phoneMaskBehavior = function (val) {
+            return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+        };
+        var phoneOptions = {
+            onKeyPress: function (val, e, field, options) {
+                field.mask(phoneMaskBehavior.apply({}, arguments), options);
+            }
+        };
 
-    phoneInputs.forEach(function (input) {
-        // Formata o valor inicial (se houver)
-        if (input.value) {
-            input.value = formatPhone(input.value);
-        }
-
-        input.addEventListener("input", function () {
-            input.value = formatPhone(input.value);
-        });
-    });
-
-    function formatPhone(value) {
-        let cleanValue = value.replace(/\D/g, "");
-
-        if (cleanValue.length > 11) {
-            cleanValue = cleanValue.slice(0, 11);
-        }
-
-        if (cleanValue.length <= 10) {
-            return cleanValue.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, function (_, ddd, part1, part2) {
-                let result = "";
-                if (ddd) result += "(" + ddd;
-                if (ddd.length === 2) result += ") ";
-                if (part1) result += part1;
-                if (part2) result += "-" + part2;
-                return result;
-            });
-        } else {
-            return cleanValue.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, function (_, ddd, part1, part2) {
-                let result = "";
-                if (ddd) result += "(" + ddd;
-                if (ddd.length === 2) result += ") ";
-                if (part1) result += part1;
-                if (part2) result += "-" + part2;
-                return result;
-            });
-        }
+        $('.phone-mask, input[name="telefone"], #id_telefone').mask(phoneMaskBehavior, phoneOptions);
+        $('.cpf-mask, #id_cpf').mask('000.000.000-00', {reverse: true});
+        $('.money-mask, #id_preco, #id_valor').mask('000.000,00', {reverse: true});
     }
 
+    // =========================================================
+    // PLUGIN JQUERY 2: JQUERY DATATABLES (Requisito 3º Trimestre)
+    // =========================================================
+    if ($.fn.DataTable) {
+        $('.datatable-delacruz, .table-glass').each(function () {
+            if (!$.fn.DataTable.isDataTable(this)) {
+                $(this).DataTable({
+                    language: {
+                        search: "<i class='bi bi-search me-1'></i> Filtrar Tabela:",
+                        searchPlaceholder: "Digite para filtrar...",
+                        lengthMenu: "Mostrar _MENU_ registros por página",
+                        zeroRecords: "Nenhum registro correspondente encontrado.",
+                        info: "Exibindo _START_ até _END_ de _TOTAL_ registros",
+                        infoEmpty: "Nenhum registro disponível",
+                        infoFiltered: "(filtrado de _MAX_ registros no total)",
+                        paginate: {
+                            first: "Primeira",
+                            last: "Última",
+                            next: "Próxima",
+                            previous: "Anterior"
+                        }
+                    },
+                    paging: false, // Mantém a paginação do Django ListView funcionando harmonicamente
+                    info: false,
+                    responsive: true,
+                    order: []
+                });
+            }
+        });
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
     // 2. Public Appointment Booking Flow Interaction
     const barberSelect = document.querySelector('select[name="barbeiro"]');
     const dateInput = document.querySelector('input[name="data"]');

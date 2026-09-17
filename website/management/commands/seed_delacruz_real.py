@@ -1,15 +1,15 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from decimal import Decimal
 from datetime import time
 from website.models import (
-    Servico, Produto, PlanoAssinatura, Barbeiro, HorarioDisponivel
+    Servico, Produto, PlanoAssinatura, Barbeiro, HorarioDisponivel, PerfilUsuario
 )
 
 
 class Command(BaseCommand):
-    help = "Configuração real do catálogo da Delacruz Barber (Serviços, Produtos, Planos e Horários de 08:00 a 21:30)"
+    help = "Configuração real do catálogo da Delacruz Barber (Serviços, Produtos, Planos, Horários e Grupos de Permissão)"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -25,6 +25,27 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             admin_user = User.objects.filter(is_superuser=True).first()
+
+            # 0. GRUPOS DE USUÁRIOS (Requisito GroupRequiredMixin)
+            self.stdout.write("\n[0/5] Configurando Grupos de Usuários (Administradores, Barbeiros, Clientes)...")
+            grupos = ["Administradores", "Barbeiros", "Clientes"]
+            for g_name in grupos:
+                grupo, created = Group.objects.get_or_create(name=g_name)
+                status_txt = "Criado" if created else "Já existente"
+                self.stdout.write(f"  * Grupo '{grupo.name}': {status_txt}")
+
+            # Sincroniza usuários existentes com seus respectivos grupos
+            for user in User.objects.all():
+                perfil = getattr(user, "perfil", None)
+                if user.is_superuser or user.is_staff or (perfil and perfil.tipo_usuario == "administrador"):
+                    g_admin = Group.objects.get(name="Administradores")
+                    user.groups.add(g_admin)
+                elif perfil and perfil.tipo_usuario == "barbeiro":
+                    g_barb = Group.objects.get(name="Barbeiros")
+                    user.groups.add(g_barb)
+                else:
+                    g_cli = Group.objects.get(name="Clientes")
+                    user.groups.add(g_cli)
 
             # 1. SERVIÇOS CONFIRMADOS
             servicos_config = [

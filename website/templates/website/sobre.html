@@ -39,13 +39,16 @@
                         <!-- Use Case Diagram -->
                         <div class="col-md-6 text-center">
                             <div class="p-3 bg-dark rounded border border-secondary h-100 d-flex flex-column justify-content-between">
-                                <h5 class="text-white mb-3">Diagrama de Caso de Uso</h5>
+                                <h5 class="text-white mb-3"><i class="bi bi-diagram-2 text-info me-1"></i> Diagrama de Casos de Uso</h5>
                                 <div class="mb-3 flex-grow-1 d-flex align-items-center justify-content-center">
-                                    <img src="{% static 'website/img/diagrama-caso-uso.png' %}" class="img-fluid rounded border border-secondary" alt="Diagrama de Caso de Uso" onerror="this.style.display='none'; document.getElementById('use-case-placeholder').style.display='block';">
-                                    <div id="use-case-placeholder" class="p-4 w-100 text-center text-muted" style="display:none; border: 1.5px dashed rgba(255, 255, 255, 0.15);">
-                                        <i class="bi bi-diagram-2 fs-2 d-block mb-2 text-secondary"></i>
-                                        <span class="small">Insira aqui a imagem do diagrama de caso de uso.</span>
-                                    </div>
+                                    <a href="{% static 'website/img/diagrama-caso-uso.png' %}" target="_blank" title="Clique para ampliar">
+                                        <img src="{% static 'website/img/diagrama-caso-uso.png' %}" class="img-fluid rounded border border-secondary shadow hover-zoom" alt="Diagrama de Casos de Uso">
+                                    </a>
+                                </div>
+                                <div class="mt-2">
+                                    <a href="{% static 'website/img/diagrama-caso-uso.png' %}" target="_blank" class="btn btn-sm btn-delacruz-outline w-100">
+                                        <i class="bi bi-arrows-fullscreen me-1"></i> Ver em Tela Cheia
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -53,13 +56,16 @@
                         <!-- Class Diagram -->
                         <div class="col-md-6 text-center">
                             <div class="p-3 bg-dark rounded border border-secondary h-100 d-flex flex-column justify-content-between">
-                                <h5 class="text-white mb-3">Diagrama de Classes</h5>
+                                <h5 class="text-white mb-3"><i class="bi bi-diagram-3 text-warning me-1"></i> Diagrama de Classes</h5>
                                 <div class="mb-3 flex-grow-1 d-flex align-items-center justify-content-center">
-                                    <img src="{% static 'website/img/diagrama-classes.png' %}" class="img-fluid rounded border border-secondary" alt="Diagrama de Classes" onerror="this.style.display='none'; document.getElementById('class-placeholder').style.display='block';">
-                                    <div id="class-placeholder" class="p-4 w-100 text-center text-muted" style="display:none; border: 1.5px dashed rgba(255, 255, 255, 0.15);">
-                                        <i class="bi bi-diagram-3 fs-2 d-block mb-2 text-secondary"></i>
-                                        <span class="small">Insira aqui a imagem do diagrama de classes.</span>
-                                    </div>
+                                    <a href="{% static 'website/img/diagrama-classes.png' %}" target="_blank" title="Clique para ampliar">
+                                        <img src="{% static 'website/img/diagrama-classes.png' %}" class="img-fluid rounded border border-secondary shadow hover-zoom" alt="Diagrama de Classes">
+                                    </a>
+                                </div>
+                                <div class="mt-2">
+                                    <a href="{% static 'website/img/diagrama-classes.png' %}" target="_blank" class="btn btn-sm btn-delacruz-outline w-100">
+                                        <i class="bi bi-arrows-fullscreen me-1"></i> Ver em Tela Cheia
+                                    </a>
                                 </div>
                             </div>
                         </div>

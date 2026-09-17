@@ -8,6 +8,16 @@
         <h1 class="display-5 fw-bold mb-5"><span class="text-gradient">Gerenciar Feedbacks</span></h1>
 
         <div class="card glass-card p-4">
+            <form method="get" class="mb-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control bg-dark text-white border-secondary" placeholder="Buscar feedbacks por cliente, barbeiro ou comentário..." value="{{ request.GET.q|default:'' }}">
+                    <button type="submit" class="btn btn-delacruz">Buscar</button>
+                    {% if request.GET.q %}
+                        <a href="{% url 'listar_feedbacks' %}" class="btn btn-outline-secondary">Limpar</a>
+                    {% endif %}
+                </div>
+            </form>
             <div class="table-responsive">
                 <table class="table table-hover table-glass w-100">
                     <thead>

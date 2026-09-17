@@ -73,6 +73,7 @@ class Command(BaseCommand):
                 defaults={"tipo_usuario": "barbeiro", "telefone": bdata["telefone"]}
             )
 
+            img_path = "/static/images/heitor_avatar.jpg" if "heitor" in bdata["username"] else "/static/images/danilo_avatar.jpg"
             barbeiro, b_created = Barbeiro.objects.get_or_create(
                 nome=bdata["nome"],
                 defaults={
@@ -80,9 +81,12 @@ class Command(BaseCommand):
                     "cargo": bdata["cargo"],
                     "especialidade": bdata["especialidade"],
                     "descricao_curta": bdata["descricao_curta"],
+                    "imagem_url": img_path,
                     "ativo": True
                 }
             )
+            barbeiro.imagem_url = img_path
+            barbeiro.save()
             barber_objs.append(barbeiro)
             self.stdout.write(self.style.SUCCESS(f"Barber '{barbeiro.nome}' configured (user: {bdata['username']}, password: 123456)"))
 

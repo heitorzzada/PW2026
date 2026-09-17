@@ -987,7 +987,15 @@ class ServicoListView(AdminRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Servico.objects.filter(usuario=self.request.user).order_by("ordem")
+        queryset = Servico.objects.filter(usuario=self.request.user)
+        busca = self.request.GET.get("q")
+        if busca:
+            queryset = queryset.filter(
+                Q(nome__icontains=busca) |
+                Q(categoria__icontains=busca) |
+                Q(descricao__icontains=busca)
+            )
+        return queryset.order_by("ordem")
 
 class ServicoDetailView(AdminRequiredMixin, DetailView):
     model = Servico
@@ -1044,7 +1052,15 @@ class BarbeiroListView(AdminRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Barbeiro.objects.filter(usuario=self.request.user).order_by("nome")
+        queryset = Barbeiro.objects.filter(usuario=self.request.user)
+        busca = self.request.GET.get("q")
+        if busca:
+            queryset = queryset.filter(
+                Q(nome__icontains=busca) |
+                Q(cargo__icontains=busca) |
+                Q(especialidade__icontains=busca)
+            )
+        return queryset.order_by("nome")
 
 class BarbeiroDetailView(AdminRequiredMixin, DetailView):
     model = Barbeiro
@@ -1167,7 +1183,14 @@ class HorarioDisponivelListView(AdminRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return HorarioDisponivel.objects.select_related("barbeiro").filter(usuario=self.request.user).order_by("barbeiro__nome", "horario")
+        queryset = HorarioDisponivel.objects.select_related("barbeiro").filter(usuario=self.request.user)
+        busca = self.request.GET.get("q")
+        if busca:
+            queryset = queryset.filter(
+                Q(barbeiro__nome__icontains=busca) |
+                Q(observacao__icontains=busca)
+            )
+        return queryset.order_by("barbeiro__nome", "horario")
 
 class HorarioDisponivelDetailView(AdminRequiredMixin, DetailView):
     model = HorarioDisponivel
@@ -1232,7 +1255,16 @@ class AgendamentoListView(GroupRequiredMixin, AdminRequiredMixin, ListView):
     group_required = "Administradores"
 
     def get_queryset(self):
-        return Agendamento.objects.select_related("cliente", "servico", "barbeiro").filter(usuario=self.request.user).order_by("-data", "-horario")
+        queryset = Agendamento.objects.select_related("cliente", "servico", "barbeiro").filter(usuario=self.request.user)
+        busca = self.request.GET.get("q")
+        if busca:
+            queryset = queryset.filter(
+                Q(cliente__nome__icontains=busca) |
+                Q(barbeiro__nome__icontains=busca) |
+                Q(servico__nome__icontains=busca) |
+                Q(status__icontains=busca)
+            )
+        return queryset.order_by("-data", "-horario")
 
 class AgendamentoDetailView(AdminRequiredMixin, DetailView):
     model = Agendamento
@@ -1250,7 +1282,15 @@ class MensagemContatoListView(AdminRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return MensagemContato.objects.filter(usuario=self.request.user).order_by("-enviada_em")
+        queryset = MensagemContato.objects.filter(usuario=self.request.user)
+        busca = self.request.GET.get("q")
+        if busca:
+            queryset = queryset.filter(
+                Q(nome__icontains=busca) |
+                Q(email__icontains=busca) |
+                Q(mensagem__icontains=busca)
+            )
+        return queryset.order_by("-enviada_em")
 
 class MensagemContatoDetailView(AdminRequiredMixin, DetailView):
     model = MensagemContato
@@ -1288,7 +1328,15 @@ class FeedbackListView(AdminRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Feedback.objects.select_related("cliente", "barbeiro", "agendamento").filter(usuario=self.request.user).order_by("-criado_em")
+        queryset = Feedback.objects.select_related("cliente", "barbeiro", "agendamento").filter(usuario=self.request.user)
+        busca = self.request.GET.get("q")
+        if busca:
+            queryset = queryset.filter(
+                Q(cliente__nome__icontains=busca) |
+                Q(barbeiro__nome__icontains=busca) |
+                Q(comentario__icontains=busca)
+            )
+        return queryset.order_by("-criado_em")
 
 class FeedbackDetailView(AdminRequiredMixin, DetailView):
     model = Feedback

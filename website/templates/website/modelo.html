@@ -11,6 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'website/css/style.css' %}">
+    <!-- DataTables Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -190,21 +192,95 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="footer mt-auto py-4 text-center">
+    <footer class="footer mt-auto py-5 border-top border-secondary border-opacity-25" style="background: rgba(9, 13, 22, 0.95);">
         <div class="container">
-            <p class="mb-1 text-white">💈 <strong>Delacruz Barber</strong> - Estilo e Tradição</p>
-            <p class="text-muted small mb-2">&copy; 2026 Delacruz Barber. Todos os direitos reservados.</p>
-            <p class="small mb-0">
-                <a href="{% url 'painel_tv' %}" target="_blank" class="text-secondary text-decoration-none">
-                    <i class="bi bi-tv"></i> Painel TV da Recepção
-                </a>
-            </p>
+            <div class="row g-4 text-start">
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                        <span class="fs-4">💈</span> Delacruz Barber
+                    </h5>
+                    <p class="text-white-50 small mb-3">
+                        Referência em estilo masculino, cortes degradê modernos, barba alinhada e ambiente premium para você relaxar.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="https://instagram.com" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="Instagram">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="https://wa.me/554499190997" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                        <a href="https://maps.app.goo.gl/5kBXnZueActuwurA6" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="Localização">
+                            <i class="bi bi-geo-alt"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="text-warning text-uppercase fw-bold mb-3 small">Navegação</h6>
+                    <ul class="list-unstyled text-white-50 small d-flex flex-column gap-2 mb-0">
+                        <li><a href="{% url 'pagina_inicial' %}" class="text-white-50 text-decoration-none hover-white">Início</a></li>
+                        <li><a href="{% url 'servicos' %}" class="text-white-50 text-decoration-none hover-white">Serviços</a></li>
+                        <li><a href="{% url 'barbeiros' %}" class="text-white-50 text-decoration-none hover-white">Barbeiros</a></li>
+                        <li><a href="{% url 'clube_planos' %}" class="text-warning text-decoration-none fw-bold">Clube VIP</a></li>
+                        <li><a href="{% url 'agendamento' %}" class="text-white-50 text-decoration-none hover-white">Agendamento</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6 col-6">
+                    <h6 class="text-warning text-uppercase fw-bold mb-3 small">Atendimento</h6>
+                    <ul class="list-unstyled text-white-50 small d-flex flex-column gap-1 mb-0">
+                        <li class="text-white fw-semibold">Segunda a Sexta:</li>
+                        <li class="mb-2">08:00 às 21:30</li>
+                        <li class="text-white fw-semibold">Sábado:</li>
+                        <li class="mb-2">08:00 às 20:00</li>
+                        <li class="text-danger fw-semibold">Domingo e Feriados: Fechado</li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-warning text-uppercase fw-bold mb-3 small">Onde Estamos</h6>
+                    <p class="text-white-50 small mb-2">
+                        <i class="bi bi-geo-alt text-warning me-1"></i> Rua Terezinha Fortes Martins, Centro<br>
+                        Paranavaí - PR, CEP 87704-030
+                    </p>
+                    <p class="text-white-50 small mb-3">
+                        <i class="bi bi-telephone text-warning me-1"></i> (44) 9919-0997
+                    </p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="https://maps.app.goo.gl/5kBXnZueActuwurA6" target="_blank" class="btn btn-outline-warning btn-sm py-1 px-2 text-warning" style="font-size: 0.8rem;">
+                            <i class="bi bi-geo-alt me-1"></i> Ver no Maps
+                        </a>
+                        <a href="{% url 'painel_tv' %}" target="_blank" class="btn btn-outline-secondary btn-sm py-1 px-2 text-white-50" style="font-size: 0.8rem;">
+                            <i class="bi bi-tv me-1"></i> Painel TV
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-top border-secondary border-opacity-25 mt-4 pt-4 text-center">
+                <p class="text-white-50 small mb-0">&copy; 2026 Delacruz Barber. Todos os direitos reservados.</p>
+            </div>
         </div>
     </footer>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Bootstrap 5 Bundle JS -->
+
+    <!-- BOTÃO FLUTUANTE WHATSAPP RÁPIDO -->
+    <a href="https://wa.me/554499190997?text=Ol%C3%A1!%20Gostaria%20de%20tirar%20uma%20d%C3%BAvida%20sobre%20os%20servi%C3%A7os%20da%20Delacruz%20Barber" 
+       target="_blank" 
+       class="whatsapp-float-btn" 
+       aria-label="Fale conosco no WhatsApp" 
+       title="Fale conosco no WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+        <span class="whatsapp-float-tooltip">Agende pelo WhatsApp</span>
+    </a>
+
+    <!-- Scripts: jQuery, Bootstrap 5, Plugins jQuery (Mask & DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Plugin jQuery 1: jQuery Mask Plugin (Requisito 3º Trimestre) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <!-- Plugin jQuery 2: jQuery DataTables (Requisito 3º Trimestre) -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <!-- Custom JS -->
     <script src="{% static 'website/js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}
