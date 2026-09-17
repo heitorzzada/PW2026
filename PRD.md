@@ -68,21 +68,28 @@ O sistema contempla:
 - RF13: O sistema deve gerenciar Comanda de Consumo e venda de produtos (pomadas, cervejas, óleos) associada aos agendamentos.
 - RF14: O sistema deve suportar Cupons de Desconto e programa de indicação "Indique um Amigo" com créditos.
 - RF15: O sistema deve fornecer um Painel de Recepção para Smart TV com status das cadeiras em tempo real e QR Code de check-in.
+- RF16: O sistema deve disponibilizar a seção Delacruz Reels com vídeos de cortes em movimento gravados na bancada, controle de reprodução/áudio e modal de tela cheia.
+- RF17: O sistema deve disponibilizar a seção Delacruz Academy com informações do Curso de Barbeiro Profissional (R$ 1.500,00), ministrado por Danilo Delacruz, com foto de alunos formados, ementa prática e botão direto de matrícula via WhatsApp.
+- RF18: O sistema deve disponibilizar mapa interativo e botões de rotas diretas (Google Maps, Waze e Uber) para a localização física oficial na Rua Terezinha Fortes Martins, Centro, Paranavaí - PR (CEP 87704-030).
+- RF19: O sistema deve cumprir 100% da rubrica IFPR (Diagramas UML de Casos de Uso e Classes na página /sobre/, plugins jQuery Mask e DataTables, e filtros de busca por ?q= com paginação em todas as ListViews).
 
 ## Requisitos Não Funcionais
 - Uso de Bootstrap 5 para responsividade.
-- Uso de jQuery para manipulação dinâmica da interface.
-- Segurança através de autenticação Django.
+- Uso de jQuery para manipulação dinâmica da interface (Plugins Mask e DataTables).
+- Segurança através de autenticação Django e controle de permissões por grupos (GroupRequiredMixin: Administradores, Barbeiros, Clientes).
 - Persistência em banco de dados relacional PostgreSQL (Neon Serverless DB).
-- Paleta visual customizada com destaque em Dourado/Âmbar (#fde047) para elementos secundários.
+- Paleta visual customizada com destaque em Dourado/Âmbar (#fde047) e Verde (#22c55e) em estilo glassmorphism.
 
 ## Casos de Uso
 - **CU01 - Realizar Agendamento**: Cliente seleciona barbeiro, serviço e horário disponível; sistema valida e salva.
 - **CU02 - Gestão de Perfil**: Usuário altera senha ou informações de contato.
 - **CU03 - Visualizar Agenda**: Barbeiro consulta seus agendamentos diários.
+- **CU04 - Matrícula em Curso de Barbeiro**: Usuário consulta detalhes da formação profissional de R$ 1.500 e entra em contato via WhatsApp com o professor Danilo.
 
 ## Critérios de Aceitação
 - O sistema deve impedir agendamentos em horários já reservados.
 - A navegação deve ser intuitiva e adaptada a dispositivos móveis (Bootstrap).
 - A autenticação deve garantir que usuários acessem apenas seus respectivos painéis (Área do Cliente vs. Área do Barbeiro).
 - Todas as tabelas principais devem estar devidamente relacionadas para garantir a integridade dos dados.
+- O catálogo de serviços, barbeiros, vídeos, fotos e cursos deve carregar com integridade e alta performance.
+
