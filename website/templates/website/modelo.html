@@ -267,6 +267,47 @@
         </div>
     </footer>
 
+    <!-- BOTÃO FLUTUANTE INSTAGRAM COM SELETOR DE BARBEIROS (DANILO E HEITOR) -->
+    <div class="instagram-float-wrapper">
+        <button type="button" 
+                class="instagram-float-btn" 
+                id="instagramFloatBtn" 
+                aria-label="Instagram dos Barbeiros Danilo e Heitor" 
+                title="Instagram dos Barbeiros (Danilo & Heitor)">
+            <i class="bi bi-instagram"></i>
+            <span class="instagram-float-tooltip">Instagram dos Barbeiros</span>
+        </button>
+
+        <!-- Menu Popup Suspenso com os perfis de Danilo e Heitor -->
+        <div class="instagram-float-menu shadow-lg" id="instagramFloatMenu">
+            <div class="instagram-menu-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-instagram text-danger me-1"></i> Instagram da Barbearia</span>
+                <button type="button" class="btn-close btn-close-white btn-close-sm" id="closeInstaMenu" aria-label="Fechar" style="font-size: 0.65rem;"></button>
+            </div>
+            <div class="instagram-menu-body p-2 d-flex flex-column gap-2">
+                <!-- Barbeiro 1: Danilo Delacruz -->
+                <a href="https://www.instagram.com/danilodelacruz_" target="_blank" class="instagram-barber-card text-decoration-none" title="Abrir Instagram de Danilo Delacruz">
+                    <div class="avatar-mini-insta bg-warning text-dark fw-bold">D</div>
+                    <div class="overflow-hidden flex-grow-1 text-start">
+                        <strong class="d-block text-white small">Danilo Delacruz</strong>
+                        <small class="text-warning d-block" style="font-size: 0.72rem;">@danilodelacruz_</small>
+                    </div>
+                    <i class="bi bi-box-arrow-up-right text-white-50 ms-2" style="font-size: 0.8rem;"></i>
+                </a>
+
+                <!-- Barbeiro 2: Heitor Pontes -->
+                <a href="https://www.instagram.com/heitorzzada" target="_blank" class="instagram-barber-card text-decoration-none" title="Abrir Instagram de Heitor Pontes">
+                    <div class="avatar-mini-insta bg-success text-white fw-bold">H</div>
+                    <div class="overflow-hidden flex-grow-1 text-start">
+                        <strong class="d-block text-white small">Heitor Pontes</strong>
+                        <small class="text-success d-block" style="font-size: 0.72rem;">@heitorzzada</small>
+                    </div>
+                    <i class="bi bi-box-arrow-up-right text-white-50 ms-2" style="font-size: 0.8rem;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- BOTÃO FLUTUANTE WHATSAPP RÁPIDO -->
     <a href="https://wa.me/554499190997?text=Ol%C3%A1!%20Gostaria%20de%20tirar%20uma%20d%C3%BAvida%20sobre%20os%20servi%C3%A7os%20da%20Delacruz%20Barber" 
        target="_blank" 

@@ -102,9 +102,47 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             timeGridContainer.innerHTML = `
-                <div class="text-center py-4 text-warning">
-                    <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
-                    <span class="d-block fw-bold">Consultando agenda do barbeiro...</span>
+                <div class="schedule-table-wrapper p-3 border border-secondary border-opacity-25 rounded" style="background: rgba(15, 23, 42, 0.65);">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="skeleton-shimmer" style="width: 170px; height: 20px; border-radius: 6px;"></div>
+                        <div class="skeleton-shimmer" style="width: 100px; height: 20px; border-radius: 20px;"></div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-bordered align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 135px;" class="p-3 text-center bg-dark">
+                                        <div class="skeleton-shimmer mb-2 mx-auto" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                                        <div class="skeleton-shimmer mx-auto mb-1" style="width: 60px; height: 14px;"></div>
+                                        <div class="skeleton-shimmer mx-auto" style="width: 75px; height: 11px;"></div>
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <div class="skeleton-shimmer" style="width: 95px; height: 42px; border-radius: 8px;"></div>
+                                            <div class="skeleton-shimmer" style="width: 95px; height: 42px; border-radius: 8px;"></div>
+                                            <div class="skeleton-shimmer" style="width: 95px; height: 42px; border-radius: 8px;"></div>
+                                            <div class="skeleton-shimmer" style="width: 95px; height: 42px; border-radius: 8px;"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 135px;" class="p-3 text-center bg-dark">
+                                        <div class="skeleton-shimmer mb-2 mx-auto" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                                        <div class="skeleton-shimmer mx-auto mb-1" style="width: 60px; height: 14px;"></div>
+                                        <div class="skeleton-shimmer mx-auto" style="width: 75px; height: 11px;"></div>
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <div class="skeleton-shimmer" style="width: 95px; height: 42px; border-radius: 8px;"></div>
+                                            <div class="skeleton-shimmer" style="width: 95px; height: 42px; border-radius: 8px;"></div>
+                                            <div class="skeleton-shimmer" style="width: 95px; height: 42px; border-radius: 8px;"></div>
+                                            <div class="skeleton-shimmer" style="width: 95px; height: 42px; border-radius: 8px;"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>`;
 
             let fetchUrl = `/horarios-disponiveis/?barbeiro=${barberId}&data=${selectedDate}`;
@@ -475,5 +513,289 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+
+    // =========================================================
+    // 0. SELETOR INTERATIVO DE CORTES NO HERO (CLICÁVEL & RESPONSIVO)
+    // =========================================================
+    const heroThumbBtns = document.querySelectorAll('.hero-thumb-btn');
+    const heroFeaturedCard = document.getElementById('hero-featured-card');
+    const heroFeaturedImg = document.getElementById('hero-featured-img');
+    const heroFeaturedTitle = document.getElementById('hero-featured-title');
+    const heroFeaturedBarber = document.getElementById('hero-featured-barber');
+    const heroFeaturedBadge = document.getElementById('hero-featured-badge');
+    const heroFloatingTopPill = document.getElementById('hero-floating-top-pill');
+
+    if (heroThumbBtns.length > 0 && heroFeaturedCard && heroFeaturedImg) {
+        heroThumbBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const isAlreadyActive = this.classList.contains('active');
+                const targetModal = this.getAttribute('data-modal-target');
+
+                // Se já estiver ativo, abrir o modal de zoom direto
+                if (isAlreadyActive && targetModal) {
+                    const modalEl = document.querySelector(targetModal);
+                    if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+                        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modalInstance.show();
+                    }
+                    return;
+                }
+
+                // Atualiza o estado ativo de todas as miniaturas
+                heroThumbBtns.forEach(b => {
+                    b.classList.remove('active', 'border-warning');
+                    b.classList.add('border-secondary', 'border-opacity-25');
+                    const checkIcon = b.querySelector('.thumb-check-icon');
+                    if (checkIcon) checkIcon.classList.add('d-none');
+                });
+
+                this.classList.add('active', 'border-warning');
+                this.classList.remove('border-secondary', 'border-opacity-25');
+                const activeCheck = this.querySelector('.thumb-check-icon');
+                if (activeCheck) activeCheck.classList.remove('d-none');
+
+                // Lê os dados da miniatura clicada
+                const newImg = this.getAttribute('data-img');
+                const newTitle = this.getAttribute('data-title');
+                const newBarber = this.getAttribute('data-barber');
+                const newBadge = this.getAttribute('data-badge');
+
+                // Transição suave de imagem no card do Hero
+                heroFeaturedImg.style.opacity = '0.35';
+                heroFeaturedImg.style.transform = 'scale(0.98)';
+
+                setTimeout(() => {
+                    if (newImg) heroFeaturedImg.src = newImg;
+                    if (newTitle) {
+                        heroFeaturedImg.alt = newTitle;
+                        if (heroFeaturedTitle) heroFeaturedTitle.textContent = newTitle;
+                    }
+                    if (newBarber && heroFeaturedBarber) {
+                        heroFeaturedBarber.innerHTML = `<i class="bi bi-person-fill"></i> ${newBarber}`;
+                    }
+                    if (newBadge && heroFeaturedBadge) {
+                        heroFeaturedBadge.textContent = newBadge;
+                    }
+                    if (targetModal) {
+                        heroFeaturedCard.setAttribute('data-bs-target', targetModal);
+                        if (heroFloatingTopPill) {
+                            heroFloatingTopPill.setAttribute('data-bs-target', targetModal);
+                        }
+                    }
+
+                    heroFeaturedImg.style.opacity = '1';
+                    heroFeaturedImg.style.transform = 'scale(1)';
+                }, 130);
+            });
+        });
+    }
+
+    // =========================================================
+    // 1. FILTROS RÁPIDOS POR CATEGORIAS/ESTILOS NA GALERIA (REQUISITO 2)
+    // =========================================================
+    const filterPills = document.querySelectorAll('.gallery-filter-nav .filter-pill');
+    const cutCardItems = document.querySelectorAll('.cut-card-item');
+
+    filterPills.forEach(pill => {
+        pill.addEventListener('click', function () {
+            filterPills.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+
+            const filterValue = this.getAttribute('data-filter');
+
+            cutCardItems.forEach(item => {
+                const tags = item.getAttribute('data-tags') || '';
+                if (filterValue === 'all' || tags.includes(filterValue)) {
+                    item.classList.remove('is-hidden');
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'scale(1)';
+                    }, 50);
+                } else {
+                    item.classList.add('is-hidden');
+                }
+            });
+        });
+    });
+
+    // =========================================================
+    // 2. CONTADOR SOCIAL DE LIKES & SINCRONIZAÇÃO (REQUISITO 8)
+    // =========================================================
+    const userLikesKey = 'delacruz_cut_likes_v1';
+    let savedLikes = JSON.parse(localStorage.getItem(userLikesKey) || '{}');
+
+    function syncLikeButtons() {
+        document.querySelectorAll('.btn-like-cut').forEach(btn => {
+            const cutId = btn.getAttribute('data-cut-id');
+            const countSpan = btn.querySelector('.like-count');
+            const baseCount = parseInt(btn.getAttribute('data-base-likes') || '140', 10);
+            const isLiked = !!savedLikes[cutId];
+
+            if (isLiked) {
+                btn.classList.add('liked');
+                const heartIcon = btn.querySelector('i');
+                if (heartIcon) heartIcon.className = 'bi bi-heart-fill text-danger';
+                if (countSpan) countSpan.textContent = baseCount + 1;
+            } else {
+                btn.classList.remove('liked');
+                const heartIcon = btn.querySelector('i');
+                if (heartIcon) heartIcon.className = 'bi bi-heart';
+                if (countSpan) countSpan.textContent = baseCount;
+            }
+        });
+    }
+
+    document.querySelectorAll('.btn-like-cut').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const cutId = this.getAttribute('data-cut-id');
+            if (savedLikes[cutId]) {
+                delete savedLikes[cutId];
+            } else {
+                savedLikes[cutId] = true;
+            }
+            localStorage.setItem(userLikesKey, JSON.stringify(savedLikes));
+            syncLikeButtons();
+        });
+    });
+
+    syncLikeButtons();
+
+    // =========================================================
+    // 3. EFEITO 3D TILT NOS CARDS DA GALERIA (REQUISITO 6)
+    // =========================================================
+    document.querySelectorAll('.cut-card-3d').forEach(card => {
+        card.addEventListener('mousemove', function (e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -6;
+            const rotateY = ((x - centerX) / centerX) * 6;
+
+            this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+
+        card.addEventListener('mouseleave', function () {
+            this.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+    });
+
+    // =========================================================
+    // 4. ZOOM INTERATIVO NO MODAL ESTILO INSTAGRAM (REQUISITO 3)
+    // =========================================================
+    document.querySelectorAll('.cut-zoom-container').forEach(container => {
+        const img = container.querySelector('.cut-zoom-img');
+        if (!img) return;
+
+        container.addEventListener('mousemove', function (e) {
+            const rect = this.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            img.style.transformOrigin = `${x}% ${y}%`;
+        });
+
+        container.addEventListener('mouseleave', function () {
+            img.style.transformOrigin = 'center center';
+        });
+    });
+
+    // =========================================================
+    // 5. SKELETON LOADING PARA IMAGENS COM FAILSAFE
+    // =========================================================
+    function initImageSkeletons() {
+        const wrappers = document.querySelectorAll('.cut-card-img-wrap, .img-skeleton-wrap, .barber-avatar-wrap, .gallery-card-img-wrap');
+        wrappers.forEach(wrap => {
+            const img = wrap.querySelector('img');
+            if (!img) {
+                wrap.classList.add('loaded');
+                return;
+            }
+            if (img.complete && img.naturalHeight !== 0) {
+                wrap.classList.add('loaded');
+            } else {
+                img.addEventListener('load', () => wrap.classList.add('loaded'), { once: true });
+                img.addEventListener('error', () => wrap.classList.add('loaded'), { once: true });
+            }
+        });
+
+        // Failsafe: após 1.2s desativa o shimmer de qualquer imagem pendente
+        setTimeout(() => {
+            wrappers.forEach(wrap => wrap.classList.add('loaded'));
+        }, 1200);
+    }
+    initImageSkeletons();
+
+    // =========================================================
+    // 6. SCROLL REVEAL OBSERVER RESILIENTE E PROGRESSIVO
+    // =========================================================
+    const revealElements = document.querySelectorAll('.reveal-on-scroll, .reveal-fade-left, .reveal-fade-right, .reveal-zoom-in');
+    
+    if (revealElements.length > 0) {
+        // Revela imediatamente elementos que já estão no topo da viewport inicial
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        revealElements.forEach(el => {
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= windowHeight + 40) {
+                el.classList.add('is-revealed');
+            }
+        });
+
+        // Ativa a classe no body para aplicar os estilos de scroll nos demais
+        document.body.classList.add('scroll-animations-active');
+
+        if ('IntersectionObserver' in window) {
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-revealed');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.05,
+                rootMargin: '0px 0px 50px 0px'
+            });
+
+            revealElements.forEach(el => {
+                if (!el.classList.contains('is-revealed')) {
+                    revealObserver.observe(el);
+                }
+            });
+        } else {
+            // Navegadores sem suporte a IntersectionObserver revelam tudo imediatamente
+            revealElements.forEach(el => el.classList.add('is-revealed'));
+        }
+    }
+
+    // =========================================================
+    // 7. BOTÃO FLUTUANTE INSTAGRAM (TOGGLE MOBILE & FECHAR)
+    // =========================================================
+    const instaFloatBtn = document.getElementById('instagramFloatBtn');
+    const instaFloatMenu = document.getElementById('instagramFloatMenu');
+    const closeInstaMenu = document.getElementById('closeInstaMenu');
+
+    if (instaFloatBtn && instaFloatMenu) {
+        instaFloatBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            instaFloatMenu.classList.toggle('is-open');
+        });
+
+        if (closeInstaMenu) {
+            closeInstaMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+                instaFloatMenu.classList.remove('is-open');
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!instaFloatMenu.contains(e.target) && e.target !== instaFloatBtn) {
+                instaFloatMenu.classList.remove('is-open');
+            }
+        });
+    }
 });
 

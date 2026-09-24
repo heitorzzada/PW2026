@@ -527,12 +527,68 @@ div.text-muted {
     border: 2px solid rgba(253, 224, 71, 0.4);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 35px rgba(253, 224, 71, 0.2);
     position: relative;
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
-.hero-main-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 45px rgba(253, 224, 71, 0.35);
+.clickable-hero-card {
+    cursor: pointer !important;
+}
+
+.clickable-hero-card img {
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.clickable-hero-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    border-color: rgba(253, 224, 71, 0.85) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 45px rgba(253, 224, 71, 0.45) !important;
+}
+
+.clickable-hero-card:hover img {
+    transform: scale(1.04);
+}
+
+.hero-thumb-btn {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+.hero-thumb-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(253, 224, 71, 0.6) !important;
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+.hero-thumb-btn.active {
+    border-color: #fde047 !important;
+    background: rgba(253, 224, 71, 0.12) !important;
+    box-shadow: 0 0 20px rgba(253, 224, 71, 0.35);
+}
+
+.thumb-check-icon {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #0f172a;
+    border-radius: 50%;
+    line-height: 1;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.clickable-pill {
+    cursor: pointer !important;
+    transition: all 0.25s ease;
+}
+
+.clickable-pill:hover {
+    transform: translateY(-5px) scale(1.05) !important;
+    border-color: #fde047 !important;
+    box-shadow: 0 10px 25px rgba(253, 224, 71, 0.35) !important;
 }
 
 .floating-badge {
@@ -626,6 +682,151 @@ div.text-muted {
 .modal-content {
     position: relative;
     z-index: 1062 !important;
+}
+
+/* =========================================================
+   BOTÃO FLUTUANTE DE INSTAGRAM (DANILO E HEITOR)
+   ========================================================= */
+.instagram-float-wrapper {
+    position: fixed;
+    bottom: 95px;
+    right: 25px;
+    z-index: 1040;
+}
+
+.instagram-float-btn {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 4px 20px rgba(214, 36, 159, 0.45);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+    position: relative;
+    outline: none;
+}
+
+.instagram-float-btn:hover {
+    transform: scale(1.1) translateY(-4px);
+    box-shadow: 0 8px 28px rgba(214, 36, 159, 0.65);
+    color: #ffffff !important;
+}
+
+.instagram-float-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    animation: instagramPulse 2.4s infinite ease-out;
+    z-index: -1;
+}
+
+@keyframes instagramPulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+.instagram-float-tooltip {
+    position: absolute;
+    right: 70px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid rgba(214, 36, 159, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.3s ease;
+}
+
+.instagram-float-btn:hover .instagram-float-tooltip {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Menu Popup com os dois barbeiros */
+.instagram-float-menu {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 270px;
+    background: rgba(15, 23, 42, 0.96);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(214, 36, 159, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1050;
+    overflow: hidden;
+}
+
+.instagram-float-wrapper:hover .instagram-float-menu,
+.instagram-float-menu.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.instagram-menu-header {
+    background: rgba(30, 41, 59, 0.85);
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.instagram-barber-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.2s ease;
+}
+
+.instagram-barber-card:hover {
+    background: rgba(214, 36, 159, 0.18);
+    border-color: rgba(214, 36, 159, 0.6);
+    transform: translateX(-3px);
+}
+
+.avatar-mini-insta {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
 }
 
 /* =========================================================
@@ -985,6 +1186,469 @@ div.text-muted {
     position: relative;
     z-index: 3;
     padding: 1.25rem;
+}
+
+/* =========================================================
+   GALERIA DELACRUZ PREMIUM - 5 NOVAS FUNCIONALIDADES (UI/UX)
+   ========================================================= */
+
+/* 1. TICKER / MARQUEE INFINITO DOS CORTES */
+.cuts-ticker-wrapper {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem 0;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.cuts-ticker-track {
+    display: flex;
+    width: max-content;
+    gap: 1.25rem;
+    animation: cutsTickerScroll 30s linear infinite;
+}
+
+.cuts-ticker-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes cutsTickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.cuts-ticker-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.45rem 1rem 0.45rem 0.5rem;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50px;
+    backdrop-filter: blur(8px);
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.cuts-ticker-chip:hover {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.5);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+}
+
+.cuts-ticker-chip img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(234, 179, 8, 0.6);
+}
+
+/* 2. FILTRO RÁPIDO POR CATEGORIAS/ESTILOS (TAGS DINÂMICAS) */
+.gallery-filter-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-bottom: 2.5rem;
+}
+
+.filter-pill {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    padding: 0.55rem 1.25rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-pill:hover {
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.filter-pill.active {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(234, 179, 8, 0.2) 100%);
+    border-color: var(--accent-green, #22c55e);
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.35);
+    font-weight: 600;
+}
+
+/* 3. CARDS COM EFEITO 3D TILT E BORDA GRADIENTE LUMINOSA */
+.cut-card-item {
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.cut-card-item.is-hidden {
+    display: none !important;
+}
+
+.cut-card-3d {
+    position: relative;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    transform-style: preserve-3d;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.cut-card-3d:hover {
+    border-color: rgba(34, 197, 94, 0.45);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(34, 197, 94, 0.2);
+}
+
+.cut-card-img-wrap {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.cut-card-img-wrap img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cut-card-3d:hover .cut-card-img-wrap img {
+    transform: scale(1.08);
+}
+
+.cut-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.85) 100%);
+    pointer-events: none;
+}
+
+/* BADGES & SELO CORTE DA SEMANA */
+.badge-corte-semana {
+    background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+    color: #0b0f19;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    z-index: 2;
+}
+
+/* 4. CONTADOR DE LIKES (REQUISITO 8) */
+.btn-like-cut {
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f1f5f9;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+}
+
+.btn-like-cut:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.6);
+    color: #fca5a5;
+    transform: scale(1.05);
+}
+
+.btn-like-cut.liked {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.btn-like-cut.liked i {
+    animation: heartPulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes heartPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+
+/* 5. MODAL ESTILO INSTAGRAM / PINTEREST COM DETALHES TÉCNICOS E ZOOM (REQUISITO 3) */
+.modal-cut-detail .modal-dialog {
+    max-width: 950px;
+}
+
+.modal-cut-detail .modal-content {
+    background: #0f172a;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(34, 197, 94, 0.2);
+}
+
+.cut-zoom-container {
+    position: relative;
+    background: #060911;
+    overflow: hidden;
+    cursor: zoom-in;
+    min-height: 480px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cut-zoom-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.25s ease-out;
+    transform-origin: center center;
+}
+
+.cut-zoom-container:hover .cut-zoom-img {
+    transform: scale(1.6);
+}
+
+.cut-zoom-hint {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #cbd5e1;
+    font-size: 0.72rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+}
+
+.cut-detail-panel {
+    background: #0f172a;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.cut-tech-specs {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.tech-spec-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.825rem;
+}
+
+.tech-spec-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.tech-spec-icon {
+    color: var(--accent-gold, #eab308);
+    font-size: 1rem;
+    line-height: 1.2;
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   SKELETON LOADING SYSTEM (MODERNO & PROFISSIONAL)
+   ========================================================= */
+
+@keyframes skeletonShimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-shimmer,
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(30, 41, 59, 0.6) 20%,
+        rgba(51, 65, 85, 0.85) 40%,
+        rgba(30, 41, 59, 0.6) 60%
+    );
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.skeleton-pulse {
+    animation: skeletonPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Image Skeleton Loading Wrapper */
+.cut-card-img-wrap,
+.img-skeleton-wrap,
+.barber-avatar-wrap {
+    position: relative;
+    background: linear-gradient(
+        90deg,
+        rgba(15, 23, 42, 0.8) 20%,
+        rgba(30, 41, 59, 0.9) 40%,
+        rgba(15, 23, 42, 0.8) 60%
+    );
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.cut-card-img-wrap.loaded,
+.img-skeleton-wrap.loaded,
+.barber-avatar-wrap.loaded {
+    animation: none;
+    background: transparent;
+}
+
+/* Imagens sempre visíveis por padrão, evitando tela preta ou imagens vazias */
+.cut-card-img-wrap img,
+.img-skeleton-wrap img,
+.barber-avatar-wrap img {
+    display: block;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* =========================================================
+   HERO ENTRANCE ANIMATIONS (CSS NATIVO, IMEDIATO)
+   ========================================================= */
+.hero-fade-in-left {
+    animation: heroFadeInLeft 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-fade-in-right {
+    animation: heroFadeInRight 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+@keyframes heroFadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes heroFadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* =========================================================
+   SCROLL REVEAL ANIMATIONS (CINEMATIC SCROLL PROGRESSIVO)
+   ========================================================= */
+
+/* Padrão resiliente: elementos começam visíveis para evitar página em branco */
+.reveal-on-scroll,
+.reveal-fade-left,
+.reveal-fade-right,
+.reveal-zoom-in {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+/* Apenas quando o JavaScript confirma a inicialização, o scroll reveal opera */
+body.scroll-animations-active .reveal-on-scroll:not(.is-revealed) {
+    opacity: 0;
+    transform: translateY(28px);
+}
+
+body.scroll-animations-active .reveal-fade-left:not(.is-revealed) {
+    opacity: 0;
+    transform: translateX(-28px);
+}
+
+body.scroll-animations-active .reveal-fade-right:not(.is-revealed) {
+    opacity: 0;
+    transform: translateX(28px);
+}
+
+body.scroll-animations-active .reveal-zoom-in:not(.is-revealed) {
+    opacity: 0;
+    transform: scale(0.94);
+}
+
+body.scroll-animations-active .reveal-on-scroll.is-revealed,
+body.scroll-animations-active .reveal-fade-left.is-revealed,
+body.scroll-animations-active .reveal-fade-right.is-revealed,
+body.scroll-animations-active .reveal-zoom-in.is-revealed {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+}
+
+/* Delays para animação escalonada (Stagger effect) */
+.delay-1 { transition-delay: 0.08s; }
+.delay-2 { transition-delay: 0.16s; }
+.delay-3 { transition-delay: 0.24s; }
+.delay-4 { transition-delay: 0.32s; }
+.delay-5 { transition-delay: 0.40s; }
+.delay-6 { transition-delay: 0.48s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-fade-in-left,
+    .hero-fade-in-right,
+    .reveal-on-scroll,
+    .reveal-fade-left,
+    .reveal-fade-right,
+    .reveal-zoom-in {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+    }
 }
 
 

@@ -187,6 +187,9 @@ class AgendamentoPublicoView(FormView):
                     "nome": f"{self.request.user.first_name} {self.request.user.last_name}",
                     "email": self.request.user.email,
                 })
+        barb_param = self.request.GET.get("barbeiro")
+        if barb_param:
+            initial["barbeiro"] = barb_param
         return initial
 
     def get_context_data(self, **kwargs):
@@ -394,7 +397,8 @@ class CustomLogoutView(LogoutView):
     next_page = "pagina_inicial"
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
-    template_name = "registration/alterar_senha.html"
+    template_name = "website/form.html"
+    extra_context = {"titulo": "Alterar Senha", "botao": "Salvar Nova Senha"}
     success_url = reverse_lazy("redirecionar_usuario")
 
     def form_valid(self, form):

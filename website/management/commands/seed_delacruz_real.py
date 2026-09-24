@@ -1,3 +1,6 @@
+import shutil
+from pathlib import Path
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.contrib.auth.models import User, Group
@@ -290,6 +293,18 @@ class Command(BaseCommand):
 
             # 5. FOTOS REAIS DE TRABALHOS (GALERIA)
             self.stdout.write("\n[5/5] Configurando Galeria de Fotos de Trabalhos...")
+
+            # Garante que os arquivos físicos estejam em MEDIA_ROOT/trabalhos/
+            media_trabalhos = Path(settings.MEDIA_ROOT) / "trabalhos"
+            media_trabalhos.mkdir(parents=True, exist_ok=True)
+            static_cortes = Path(settings.BASE_DIR) / "static" / "images" / "cortes"
+            if static_cortes.exists():
+                for img_file in static_cortes.glob("*.*"):
+                    dest_file = media_trabalhos / img_file.name
+                    if not dest_file.exists():
+                        shutil.copy2(img_file, dest_file)
+                        self.stdout.write(f"  + Arquivo de mídia copiado: {dest_file.name}")
+
             fotos_config = [
                 {
                     "titulo": "Taper Fade em Cachos com Luzes",
