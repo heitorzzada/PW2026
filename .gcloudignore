@@ -15,5 +15,10 @@
 
 # Python pycache:
 __pycache__/
+*.pyc
+
 # Ignored by the build system
 /setup.cfg
+
+# Outros arquivos que não precisam
+*.md

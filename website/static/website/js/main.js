@@ -481,8 +481,11 @@ document.addEventListener("DOMContentLoaded", function () {
         video.addEventListener('pause', () => card.classList.remove('is-playing'));
     });
 
-    // Auto-play suave silenciado ao rolar a página para a seção (IntersectionObserver)
-    if ('IntersectionObserver' in window && reelCards.length > 0) {
+    // Auto-play suave silenciado apenas no desktop (IntersectionObserver)
+    // Em dispositivos móveis touch, o autoplay simultâneo sobrecarrega o hardware e engasga a rolagem
+    const isMobileDevice = window.innerWidth < 768 || ('ontouchstart' in window && window.innerWidth < 992);
+
+    if (!isMobileDevice && 'IntersectionObserver' in window && reelCards.length > 0) {
         const reelObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const card = entry.target;
@@ -664,25 +667,27 @@ document.addEventListener("DOMContentLoaded", function () {
     syncLikeButtons();
 
     // =========================================================
-    // 3. EFEITO 3D TILT NOS CARDS DA GALERIA (REQUISITO 6)
+    // 3. EFEITO 3D TILT NOS CARDS DA GALERIA (MOUSE DESKTOP APENAS)
     // =========================================================
-    document.querySelectorAll('.cut-card-3d').forEach(card => {
-        card.addEventListener('mousemove', function (e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const rotateX = ((y - centerY) / centerY) * -6;
-            const rotateY = ((x - centerX) / centerX) * 6;
+    if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        document.querySelectorAll('.cut-card-3d').forEach(card => {
+            card.addEventListener('mousemove', function (e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -6;
+                const rotateY = ((x - centerX) / centerX) * 6;
 
-            this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-        });
+                this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
 
-        card.addEventListener('mouseleave', function () {
-            this.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            card.addEventListener('mouseleave', function () {
+                this.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            });
         });
-    });
+    }
 
     // =========================================================
     // 4. ZOOM INTERATIVO NO MODAL ESTILO INSTAGRAM (REQUISITO 3)
@@ -735,11 +740,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const revealElements = document.querySelectorAll('.reveal-on-scroll, .reveal-fade-left, .reveal-fade-right, .reveal-zoom-in');
     
     if (revealElements.length > 0) {
-        // Revela imediatamente elementos que já estão no topo da viewport inicial
+        // Revela imediatamente elementos que já estão no topo ou próximos da viewport inicial
         const windowHeight = window.innerHeight || document.documentElement.clientHeight;
         revealElements.forEach(el => {
             const rect = el.getBoundingClientRect();
-            if (rect.top <= windowHeight + 40) {
+            if (rect.top <= windowHeight + 120) {
                 el.classList.add('is-revealed');
             }
         });
@@ -748,6 +753,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.classList.add('scroll-animations-active');
 
         if ('IntersectionObserver' in window) {
+            const isSmallScreen = window.innerWidth < 768;
             const revealObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -756,8 +762,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
             }, {
-                threshold: 0.05,
-                rootMargin: '0px 0px 50px 0px'
+                threshold: 0.02,
+                rootMargin: isSmallScreen ? '0px 0px 220px 0px' : '0px 0px 80px 0px'
             });
 
             revealElements.forEach(el => {
@@ -769,32 +775,144 @@ document.addEventListener("DOMContentLoaded", function () {
             // Navegadores sem suporte a IntersectionObserver revelam tudo imediatamente
             revealElements.forEach(el => el.classList.add('is-revealed'));
         }
+
+        // Failsafe absoluto: após 2.2s garante que todos os elementos e botões estejam visíveis
+        setTimeout(() => {
+            revealElements.forEach(el => el.classList.add('is-revealed'));
+        }, 2200);
     }
 
     // =========================================================
-    // 7. BOTÃO FLUTUANTE INSTAGRAM (TOGGLE MOBILE & FECHAR)
+    // 6.1. EFEITOS DINÂMICOS DE SCROLL (PROGRESS BAR, NAVBAR & VOLTAR AO TOPO)
     // =========================================================
-    const instaFloatBtn = document.getElementById('instagramFloatBtn');
-    const instaFloatMenu = document.getElementById('instagramFloatMenu');
-    const closeInstaMenu = document.getElementById('closeInstaMenu');
+    const scrollProgressBar = document.getElementById('scroll-progress-bar');
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    const navbarDelacruz = document.querySelector('.navbar-delacruz');
 
-    if (instaFloatBtn && instaFloatMenu) {
-        instaFloatBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            instaFloatMenu.classList.toggle('is-open');
-        });
+    function updateScrollEffects() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        const scrollHeight = (document.documentElement.scrollHeight || document.body.scrollHeight) - document.documentElement.clientHeight;
 
-        if (closeInstaMenu) {
-            closeInstaMenu.addEventListener('click', function (e) {
-                e.stopPropagation();
-                instaFloatMenu.classList.remove('is-open');
-            });
+        // 1. Barra de progresso de leitura dourada no topo
+        if (scrollProgressBar && scrollHeight > 0) {
+            const progress = Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100));
+            scrollProgressBar.style.width = `${progress}%`;
+            scrollProgressBar.setAttribute('aria-valuenow', Math.round(progress));
         }
 
-        document.addEventListener('click', function (e) {
-            if (!instaFloatMenu.contains(e.target) && e.target !== instaFloatBtn) {
-                instaFloatMenu.classList.remove('is-open');
+        // 2. Botão Flutuante Voltar ao Topo
+        if (backToTopBtn) {
+            if (scrollTop > 350) {
+                backToTopBtn.classList.add('is-visible');
+            } else {
+                backToTopBtn.classList.remove('is-visible');
             }
+        }
+
+        // 3. Navbar com elevação e desfoque reforçado
+        if (navbarDelacruz) {
+            if (scrollTop > 35) {
+                navbarDelacruz.classList.add('navbar-scrolled');
+            } else {
+                navbarDelacruz.classList.remove('navbar-scrolled');
+            }
+        }
+    }
+
+    let isScrollTicking = false;
+    window.addEventListener('scroll', function () {
+        if (!isScrollTicking) {
+            window.requestAnimationFrame(function () {
+                updateScrollEffects();
+                isScrollTicking = false;
+            });
+            isScrollTicking = true;
+        }
+    }, { passive: true });
+
+    // Ação do Botão Voltar ao Topo
+    if (backToTopBtn) {
+        backToTopBtn.addEventListener('click', function () {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+
+    // Executa no carregamento inicial
+    updateScrollEffects();
+
+    // =========================================================
+    // 7. BOTÕES FLUTUANTES INSTAGRAM & WHATSAPP (MODAL SELECTORS)
+    // =========================================================
+    // Os modais #modalWhatsApp e #modalInstagram são abertos de forma nativa e fluida
+    // via atributos Bootstrap data-bs-toggle="modal" data-bs-target="#modalWhatsApp".
+    // Aqui adicionamos o auto-fechamento suave do modal quando o usuário clica em um dos barbeiros.
+    document.querySelectorAll('#modalWhatsApp a, #modalInstagram a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            const parentModal = this.closest('.modal');
+            if (parentModal && window.bootstrap && window.bootstrap.Modal) {
+                setTimeout(function() {
+                    const instance = bootstrap.Modal.getInstance(parentModal);
+                    if (instance) instance.hide();
+                }, 400);
+            }
+        });
+    });
+
+    // =========================================================
+    // 8. SELETOR INTERATIVO DE ALUNOS FORMADOS NO CURSO
+    // =========================================================
+    const courseThumbBtns = document.querySelectorAll('.course-thumb-btn');
+    const courseMainImg = document.getElementById('course-featured-img');
+    const courseMainName = document.getElementById('course-featured-name');
+    const courseMainDesc = document.getElementById('course-featured-desc');
+    const courseFeaturedCard = document.getElementById('course-featured-card');
+
+    if (courseThumbBtns.length > 0 && courseMainImg) {
+        courseThumbBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                courseThumbBtns.forEach(function (b) {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                const newImg = this.getAttribute('data-img');
+                const newName = this.getAttribute('data-name');
+                const newDesc = this.getAttribute('data-desc');
+                const modalTarget = this.getAttribute('data-modal-target');
+
+                courseMainImg.style.opacity = '0';
+                setTimeout(function () {
+                    courseMainImg.src = newImg;
+                    if (courseMainName) courseMainName.textContent = newName;
+                    if (courseMainDesc) courseMainDesc.textContent = newDesc;
+                    if (courseFeaturedCard && modalTarget) {
+                        courseFeaturedCard.setAttribute('data-bs-target', modalTarget);
+                    }
+                    courseMainImg.style.opacity = '1';
+                }, 160);
+            });
+        });
+    }
+
+    // =========================================================
+    // 9. AUTO-FECHAR NAVBAR NO MOBILE AO TOCAR EM LINKS
+    // =========================================================
+    const mobileNavbar = document.getElementById('navbarNav');
+    if (mobileNavbar) {
+        mobileNavbar.querySelectorAll('.nav-link, .btn').forEach(item => {
+            item.addEventListener('click', function () {
+                if (window.innerWidth < 992 && mobileNavbar.classList.contains('show')) {
+                    if (window.bootstrap && window.bootstrap.Collapse) {
+                        const bsCollapse = bootstrap.Collapse.getInstance(mobileNavbar) || new bootstrap.Collapse(mobileNavbar);
+                        bsCollapse.hide();
+                    } else if (typeof $ !== 'undefined' && $(mobileNavbar).collapse) {
+                        $(mobileNavbar).collapse('hide');
+                    }
+                }
+            });
         });
     }
 });

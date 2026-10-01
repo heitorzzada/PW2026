@@ -11,6 +11,11 @@
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
+html {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
 body {
     background-color: var(--bg-dark);
     background-image: 
@@ -22,6 +27,9 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
+    max-width: 100vw;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Base layout & typography */
@@ -712,6 +720,10 @@ div.text-muted {
     outline: none;
 }
 
+.instagram-float-btn i {
+    pointer-events: none;
+}
+
 .instagram-float-btn:hover {
     transform: scale(1.1) translateY(-4px);
     box-shadow: 0 8px 28px rgba(214, 36, 159, 0.65);
@@ -785,11 +797,18 @@ div.text-muted {
     overflow: hidden;
 }
 
-.instagram-float-wrapper:hover .instagram-float-menu,
+@media (hover: hover) and (pointer: fine) {
+    .instagram-float-wrapper:hover .instagram-float-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+}
+
 .instagram-float-menu.is-open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) scale(1) !important;
 }
 
 .instagram-menu-header {
@@ -830,25 +849,35 @@ div.text-muted {
 }
 
 /* =========================================================
-   BOTÃO FLUTUANTE DE WHATSAPP RÁPIDO
+   BOTÃO FLUTUANTE DE WHATSAPP (DANILO E HEITOR)
    ========================================================= */
-.whatsapp-float-btn {
+.whatsapp-float-wrapper {
     position: fixed;
     bottom: 25px;
     right: 25px;
+    z-index: 1040;
+}
+
+.whatsapp-float-btn {
     width: 60px;
     height: 60px;
     background: linear-gradient(135deg, #25D366, #128C7E);
     color: #ffffff !important;
+    border: none;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 32px;
     box-shadow: 0 4px 20px rgba(37, 211, 102, 0.45);
-    z-index: 1040;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    outline: none;
+}
+
+.whatsapp-float-btn i {
+    pointer-events: none;
 }
 
 .whatsapp-float-btn:hover {
@@ -903,6 +932,76 @@ div.text-muted {
 .whatsapp-float-btn:hover .whatsapp-float-tooltip {
     opacity: 1;
     transform: translateX(0);
+}
+
+/* Menu Popup com os contatos de Danilo e Heitor */
+.whatsapp-float-menu {
+    position: absolute;
+    bottom: 0;
+    right: 72px;
+    width: 275px;
+    background: rgba(15, 23, 42, 0.96);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(37, 211, 102, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(12px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1050;
+    overflow: hidden;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .whatsapp-float-wrapper:hover .whatsapp-float-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.whatsapp-float-menu.is-open {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translate(0, 0) scale(1) !important;
+}
+
+.whatsapp-menu-header {
+    background: rgba(30, 41, 59, 0.85);
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.whatsapp-barber-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.2s ease;
+}
+
+.whatsapp-barber-card:hover {
+    background: rgba(37, 211, 102, 0.18);
+    border-color: rgba(37, 211, 102, 0.6);
+    transform: translateX(-3px);
+}
+
+.avatar-mini-whats {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
 }
 
 /* =========================================================
@@ -1430,8 +1529,10 @@ div.text-muted {
     transform-origin: center center;
 }
 
-.cut-zoom-container:hover .cut-zoom-img {
-    transform: scale(1.6);
+@media (hover: hover) and (pointer: fine) {
+    .cut-zoom-container:hover .cut-zoom-img {
+        transform: scale(1.6);
+    }
 }
 
 .cut-zoom-hint {
@@ -1589,6 +1690,75 @@ div.text-muted {
    SCROLL REVEAL ANIMATIONS (CINEMATIC SCROLL PROGRESSIVO)
    ========================================================= */
 
+html {
+    scroll-behavior: smooth;
+}
+
+/* Barra de progresso de scroll neon dourada no topo */
+#scroll-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3.5px;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.75), 0 0 4px rgba(251, 191, 36, 0.5);
+    z-index: 9999;
+    pointer-events: none;
+    transition: width 0.08s ease-out;
+}
+
+/* Navbar dinâmica reforçada com blur profundo ao rolar */
+.navbar-delacruz {
+    transition: background-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, border-bottom 0.35s ease;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+.navbar-delacruz.navbar-scrolled {
+    background: rgba(9, 13, 22, 0.96) !important;
+    box-shadow: 0 8px 30px -5px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(245, 158, 11, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Botão Flutuante Voltar ao Topo */
+.back-to-top-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.88);
+    color: #f59e0b;
+    border: 1.5px solid rgba(245, 158, 11, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    cursor: pointer;
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(18px) scale(0.85);
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 14px rgba(245, 158, 11, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.back-to-top-btn.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+.back-to-top-btn:hover {
+    background: #f59e0b;
+    color: #0b0f19;
+    border-color: #f59e0b;
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.45);
+}
+
 /* Padrão resiliente: elementos começam visíveis para evitar página em branco */
 .reveal-on-scroll,
 .reveal-fade-left,
@@ -1596,24 +1766,24 @@ div.text-muted {
 .reveal-zoom-in {
     opacity: 1;
     transform: none;
-    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
     will-change: opacity, transform;
 }
 
 /* Apenas quando o JavaScript confirma a inicialização, o scroll reveal opera */
 body.scroll-animations-active .reveal-on-scroll:not(.is-revealed) {
     opacity: 0;
-    transform: translateY(28px);
+    transform: translateY(24px) scale(0.98);
 }
 
 body.scroll-animations-active .reveal-fade-left:not(.is-revealed) {
     opacity: 0;
-    transform: translateX(-28px);
+    transform: translateX(-24px) scale(0.98);
 }
 
 body.scroll-animations-active .reveal-fade-right:not(.is-revealed) {
     opacity: 0;
-    transform: translateX(28px);
+    transform: translateX(24px) scale(0.98);
 }
 
 body.scroll-animations-active .reveal-zoom-in:not(.is-revealed) {
@@ -1627,6 +1797,7 @@ body.scroll-animations-active .reveal-fade-right.is-revealed,
 body.scroll-animations-active .reveal-zoom-in.is-revealed {
     opacity: 1;
     transform: translate(0, 0) scale(1);
+    filter: blur(0);
 }
 
 /* Delays para animação escalonada (Stagger effect) */
@@ -1638,6 +1809,9 @@ body.scroll-animations-active .reveal-zoom-in.is-revealed {
 .delay-6 { transition-delay: 0.48s; }
 
 @media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
     .hero-fade-in-left,
     .hero-fade-in-right,
     .reveal-on-scroll,
@@ -1648,8 +1822,393 @@ body.scroll-animations-active .reveal-zoom-in.is-revealed {
         transform: none !important;
         transition: none !important;
         animation: none !important;
+        filter: none !important;
     }
 }
+
+/* =========================================================
+   GALERIA & SHOWCASE DE ALUNOS FORMADOS (CURSO DELACRUZ)
+   ========================================================= */
+
+.course-thumb-btn {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.course-thumb-btn:hover {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.45);
+    transform: translateY(-2px);
+}
+
+.course-thumb-btn.active {
+    background: rgba(245, 158, 11, 0.22);
+    border-color: #f59e0b;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.35);
+}
+
+.course-thumb-btn .thumb-check {
+    display: none;
+    color: #f59e0b;
+}
+
+.course-thumb-btn.active .thumb-check {
+    display: inline-block;
+}
+
+/* Card 16:9 para a galeria de formados */
+.student-card-16-9 {
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    background: #0b0f19;
+    border: 1.5px solid rgba(245, 158, 11, 0.25);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+    cursor: pointer;
+}
+
+.student-card-16-9:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: #f59e0b;
+    box-shadow: 0 16px 36px rgba(245, 158, 11, 0.3);
+}
+
+.student-card-16-9 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-card-16-9:hover img {
+    transform: scale(1.06);
+}
+
+.student-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(9, 13, 22, 0.95) 15%, rgba(9, 13, 22, 0.4) 60%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+    transition: background 0.3s ease;
+}
+
+.student-card-16-9:hover .student-card-overlay {
+    background: linear-gradient(to top, rgba(9, 13, 22, 0.98) 25%, rgba(9, 13, 22, 0.5) 70%, rgba(9, 13, 22, 0.1) 100%);
+}
+
+/* =========================================================
+   RESPONSIVIDADE E OTIMIZAÇÃO MOBILE ULTRA-FLUIDA
+   ========================================================= */
+
+/* Tablets e Telas Menores que Desktop (< 992px) */
+@media (max-width: 991.98px) {
+    /* Navbar Mobile com Fundo Escuro Glassmorphism Sólido e Nítido */
+    .navbar-collapse {
+        background: rgba(9, 13, 22, 0.98);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        margin-top: 0.85rem;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(245, 158, 11, 0.12);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        max-height: 82vh;
+        overflow-y: auto;
+    }
+
+    .navbar-collapse .nav-link {
+        padding: 0.7rem 1rem !important;
+        border-radius: 8px;
+        font-size: 1.05rem;
+        transition: all 0.2s ease;
+    }
+
+    .navbar-collapse .nav-link:hover,
+    .navbar-collapse .nav-link:active {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b !important;
+    }
+
+    .hero-section {
+        min-height: auto !important;
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+    }
+
+    .hero-section h1.display-4 {
+        font-size: 2.35rem;
+        line-height: 1.2;
+    }
+
+    /* Modal de corte ajustado para tablets */
+    .modal-cut-detail .cut-zoom-container {
+        min-height: 320px;
+        max-height: 380px;
+    }
+}
+
+/* Smartphones e Telas Portáteis (< 768px) */
+@media (max-width: 768px) {
+    /* Desativa background-attachment: fixed que trava o scroll em mobile */
+    body {
+        background-attachment: scroll !important;
+    }
+
+    /* Evita qualquer overflow horizontal e vibração lateral */
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+    }
+
+    /* Títulos em tamanho proporcional e harmônico */
+    h1.display-4 {
+        font-size: 1.95rem !important;
+        line-height: 1.22;
+    }
+
+    h2.h1 {
+        font-size: 1.65rem !important;
+    }
+
+    .hero-section {
+        padding-top: 1.5rem !important;
+        padding-bottom: 2.5rem !important;
+    }
+
+    .hero-section .lead {
+        font-size: 1rem;
+    }
+
+    /* Botões do Hero empilhados confortavelmente */
+    .hero-section .btn-lg {
+        padding: 0.75rem 1.25rem !important;
+        font-size: 0.95rem !important;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Animações ultra-leves no mobile: transição direta sem engasgo de GPU */
+    body.scroll-animations-active .reveal-on-scroll:not(.is-revealed),
+    body.scroll-animations-active .reveal-fade-left:not(.is-revealed),
+    body.scroll-animations-active .reveal-fade-right:not(.is-revealed),
+    body.scroll-animations-active .reveal-zoom-in:not(.is-revealed) {
+        opacity: 0 !important;
+        transform: translateY(12px) !important;
+        filter: none !important;
+        transition: opacity 0.35s ease, transform 0.35s ease !important;
+    }
+
+    body.scroll-animations-active .reveal-on-scroll.is-revealed,
+    body.scroll-animations-active .reveal-fade-left.is-revealed,
+    body.scroll-animations-active .reveal-fade-right.is-revealed,
+    body.scroll-animations-active .reveal-zoom-in.is-revealed {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+        transition: opacity 0.35s ease, transform 0.35s ease !important;
+    }
+
+    /* Pílulas de Filtro Horizontais Deslizáveis (Estilo Stories/YouTube) */
+    .gallery-filter-nav {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        justify-content: flex-start !important;
+        padding: 0.25rem 0.5rem 0.75rem 0.5rem !important;
+        margin-bottom: 1.5rem !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .gallery-filter-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-pill {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        padding: 0.45rem 1.05rem !important;
+        font-size: 0.82rem !important;
+    }
+
+    /* Ticker contínuo otimizado para GPU */
+    .cuts-ticker-wrapper {
+        mask-image: none !important;
+        -webkit-mask-image: none !important;
+        padding: 0.5rem 0 !important;
+    }
+
+    .cuts-ticker-track {
+        will-change: transform;
+    }
+
+    /* Botões Flutuantes Compactos e com Margens Seguras */
+    .whatsapp-float-wrapper {
+        position: fixed !important;
+        bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+        right: 16px !important;
+        z-index: 1040 !important;
+    }
+
+    .whatsapp-float-btn {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 26px !important;
+    }
+
+    .whatsapp-float-menu {
+        right: 0 !important;
+        width: calc(100vw - 32px) !important;
+        max-width: 290px !important;
+        bottom: 58px !important;
+        transform: translateY(12px) scale(0.95);
+    }
+
+    .instagram-float-wrapper {
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+        right: 16px !important;
+    }
+
+    .instagram-float-btn {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 25px !important;
+    }
+
+    .back-to-top-btn {
+        bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+        left: 16px !important;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1rem !important;
+    }
+
+    /* Esconde tooltips de hover em touch para não poluir nem tampar a tela */
+    .whatsapp-float-tooltip,
+    .instagram-float-tooltip {
+        display: none !important;
+    }
+
+    /* Menu do Instagram perfeitamente contido na tela */
+    .instagram-float-menu {
+        right: 0 !important;
+        width: calc(100vw - 32px) !important;
+        max-width: 290px !important;
+        bottom: 58px !important;
+    }
+
+    /* Modais de Fotos e Cortes Otimizados para Mobile */
+    .modal-cut-detail .cut-zoom-container {
+        min-height: 240px !important;
+        max-height: 310px !important;
+        cursor: default !important;
+    }
+
+    .cut-zoom-hint {
+        display: none !important;
+    }
+
+    .cut-detail-panel {
+        padding: 1.25rem !important;
+    }
+
+    .cut-tech-specs {
+        padding: 0.75rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Card dos Reels no Mobile */
+    .reel-card {
+        border-radius: 16px !important;
+        max-height: 480px;
+    }
+
+    /* Card dos alunos do curso */
+    .student-card-16-9 {
+        aspect-ratio: 16 / 9;
+        border-radius: 12px;
+    }
+}
+
+/* Telas Muito Pequenas (< 576px - iPhone SE, Galaxy A0x, telas estreitas) */
+@media (max-width: 576px) {
+    /* Tabela de horários de agendamento adaptativa em formato de lista */
+    .schedule-matrix-table thead {
+        display: none !important;
+    }
+
+    .schedule-matrix-table,
+    .schedule-matrix-table tbody,
+    .schedule-matrix-table tr,
+    .schedule-matrix-table td {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .schedule-matrix-table tr {
+        margin-bottom: 1rem !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }
+
+    .schedule-period-cell {
+        padding: 10px 14px !important;
+        text-align: center !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: rgba(15, 23, 42, 0.8) !important;
+    }
+
+    .schedule-slots-cell {
+        padding: 10px !important;
+    }
+
+    .schedule-slots-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+    }
+
+    .slot-cell-btn {
+        min-height: 48px !important;
+        padding: 6px 3px !important;
+    }
+
+    .slot-cell-btn .slot-time {
+        font-size: 0.85rem !important;
+    }
+
+    .slot-cell-btn .slot-badge-status {
+        font-size: 0.62rem !important;
+    }
+
+    /* Seletor do Hero em 2 colunas mais compactas */
+    .hero-thumb-btn {
+        padding: 6px !important;
+    }
+
+    .hero-thumb-btn img {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    /* Seletor de alunos do curso */
+    .course-thumb-btn {
+        padding: 4px 6px !important;
+    }
+}
+
 
 
 

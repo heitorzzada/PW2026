@@ -10,12 +10,14 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'website/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'website/css/style.css' %}?v=3.3">
     <!-- DataTables Bootstrap 5 CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- BARRA DE PROGRESSO DE SCROLL NO TOPO -->
+    <div id="scroll-progress-bar" role="progressbar" aria-label="Progresso de leitura da página" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-delacruz sticky-top">
@@ -205,15 +207,21 @@
                     <p class="text-white-50 small mb-3">
                         Referência em estilo masculino, cortes degradê modernos, barba alinhada e ambiente premium para você relaxar.
                     </p>
-                    <div class="d-flex gap-2">
-                        <a href="https://instagram.com" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="Instagram">
-                            <i class="bi bi-instagram"></i>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="https://www.instagram.com/danilo_delacz" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="Instagram Danilo Delacruz" title="Instagram Danilo (@danilo_delacz)">
+                            <i class="bi bi-instagram text-danger"></i> Danilo
                         </a>
-                        <a href="https://wa.me/554499190997" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="WhatsApp">
-                            <i class="bi bi-whatsapp"></i>
+                        <a href="https://www.instagram.com/barber.heitorr" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="Instagram Heitor Pontes" title="Instagram Heitor (@barber.heitorr)">
+                            <i class="bi bi-instagram text-danger"></i> Heitor
                         </a>
-                        <a href="https://maps.app.goo.gl/5kBXnZueActuwurA6" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="Localização">
-                            <i class="bi bi-geo-alt"></i>
+                        <a href="https://wa.me/554499190997?text=Ol%C3%A1%20Danilo!%20Gostaria%20de%20agendar%20um%20hor%C3%A1rio%20na%20Delacruz%20Barber." target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="WhatsApp Danilo" title="WhatsApp Danilo ((44) 9919-0997)">
+                            <i class="bi bi-whatsapp text-success"></i> Danilo
+                        </a>
+                        <a href="https://wa.me/5544991022176?text=Ol%C3%A1%20Heitor!%20Gostaria%20de%20agendar%20um%20hor%C3%A1rio%20com%20voc%C3%AA%20na%20Delacruz%20Barber." target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="WhatsApp Heitor" title="WhatsApp Heitor ((44) 99102-2176)">
+                            <i class="bi bi-whatsapp text-success"></i> Heitor
+                        </a>
+                        <a href="https://maps.app.goo.gl/5kBXnZueActuwurA6" target="_blank" class="btn btn-sm btn-delacruz-outline py-1 px-2" aria-label="Localização" title="Ver no Google Maps">
+                            <i class="bi bi-geo-alt text-warning"></i>
                         </a>
                     </div>
                 </div>
@@ -272,51 +280,129 @@
         <button type="button" 
                 class="instagram-float-btn" 
                 id="instagramFloatBtn" 
+                data-bs-toggle="modal" 
+                data-bs-target="#modalInstagram"
+                onclick="if(!window.bootstrap||!window.bootstrap.Modal){window.open('https://www.instagram.com/barber.heitorr','_blank')}"
                 aria-label="Instagram dos Barbeiros Danilo e Heitor" 
                 title="Instagram dos Barbeiros (Danilo & Heitor)">
             <i class="bi bi-instagram"></i>
             <span class="instagram-float-tooltip">Instagram dos Barbeiros</span>
         </button>
+    </div>
 
-        <!-- Menu Popup Suspenso com os perfis de Danilo e Heitor -->
-        <div class="instagram-float-menu shadow-lg" id="instagramFloatMenu">
-            <div class="instagram-menu-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-instagram text-danger me-1"></i> Instagram da Barbearia</span>
-                <button type="button" class="btn-close btn-close-white btn-close-sm" id="closeInstaMenu" aria-label="Fechar" style="font-size: 0.65rem;"></button>
-            </div>
-            <div class="instagram-menu-body p-2 d-flex flex-column gap-2">
-                <!-- Barbeiro 1: Danilo Delacruz -->
-                <a href="https://www.instagram.com/danilodelacruz_" target="_blank" class="instagram-barber-card text-decoration-none" title="Abrir Instagram de Danilo Delacruz">
-                    <div class="avatar-mini-insta bg-warning text-dark fw-bold">D</div>
-                    <div class="overflow-hidden flex-grow-1 text-start">
-                        <strong class="d-block text-white small">Danilo Delacruz</strong>
-                        <small class="text-warning d-block" style="font-size: 0.72rem;">@danilodelacruz_</small>
-                    </div>
-                    <i class="bi bi-box-arrow-up-right text-white-50 ms-2" style="font-size: 0.8rem;"></i>
-                </a>
+    <!-- BOTÃO FLUTUANTE WHATSAPP COM SELETOR DE BARBEIROS (DANILO E HEITOR) -->
+    <div class="whatsapp-float-wrapper">
+        <button type="button" 
+                class="whatsapp-float-btn" 
+                id="whatsappFloatBtn" 
+                data-bs-toggle="modal" 
+                data-bs-target="#modalWhatsApp"
+                onclick="if(!window.bootstrap||!window.bootstrap.Modal){window.open('https://wa.me/5544991022176','_blank')}"
+                aria-label="WhatsApp dos Barbeiros Danilo e Heitor" 
+                title="WhatsApp dos Barbeiros (Danilo & Heitor)">
+            <i class="bi bi-whatsapp"></i>
+            <span class="whatsapp-float-tooltip">WhatsApp dos Barbeiros</span>
+        </button>
+    </div>
 
-                <!-- Barbeiro 2: Heitor Pontes -->
-                <a href="https://www.instagram.com/heitorzzada" target="_blank" class="instagram-barber-card text-decoration-none" title="Abrir Instagram de Heitor Pontes">
-                    <div class="avatar-mini-insta bg-success text-white fw-bold">H</div>
-                    <div class="overflow-hidden flex-grow-1 text-start">
-                        <strong class="d-block text-white small">Heitor Pontes</strong>
-                        <small class="text-success d-block" style="font-size: 0.72rem;">@heitorzzada</small>
+    <!-- MODAL SELETOR DE WHATSAPP (HEITOR E DANILO) -->
+    <div class="modal fade" id="modalWhatsApp" tabindex="-1" aria-labelledby="modalWhatsAppLabel" aria-hidden="true" style="z-index: 1065;">
+        <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 380px;">
+            <div class="modal-content text-white shadow-lg" style="background: rgba(9, 13, 22, 0.98); backdrop-filter: blur(20px); border: 1.5px solid rgba(37, 211, 102, 0.5); border-radius: 20px;">
+                <div class="modal-header border-secondary border-opacity-25 pb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-4 text-success"><i class="bi bi-whatsapp"></i></span>
+                        <div>
+                            <h5 class="modal-title fw-bold text-white fs-6 mb-0" id="modalWhatsAppLabel">WhatsApp dos Barbeiros</h5>
+                            <small class="text-white-50" style="font-size: 0.75rem;">Escolha com quem deseja falar no WhatsApp:</small>
+                        </div>
                     </div>
-                    <i class="bi bi-box-arrow-up-right text-white-50 ms-2" style="font-size: 0.8rem;"></i>
-                </a>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body p-3 d-flex flex-column gap-3">
+                    <!-- Opção 1: Heitor Pontes -->
+                    <a href="https://wa.me/5544991022176?text=Ol%C3%A1%20Heitor!%20Gostaria%20de%20agendar%20um%20hor%C3%A1rio%20com%20voc%C3%AA%20na%20Delacruz%20Barber." 
+                       target="_blank" 
+                       class="text-decoration-none p-3 rounded-3 d-flex align-items-center gap-3 text-white shadow-sm"
+                       style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.22) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1.5px solid rgba(34, 197, 94, 0.55); transition: transform 0.2s, border-color 0.2s;">
+                        <div class="avatar-mini-whats bg-success text-white fw-bold shadow" style="width: 46px; height: 46px; font-size: 1.2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">H</div>
+                        <div class="flex-grow-1 text-start overflow-hidden">
+                            <span class="badge bg-success text-white mb-1" style="font-size: 0.65rem;">Barbeiro</span>
+                            <strong class="d-block text-white fs-6">Heitor Pontes</strong>
+                            <span class="text-success fw-bold d-block text-truncate" style="font-size: 0.82rem;"><i class="bi bi-whatsapp me-1"></i>(44) 99102-2176</span>
+                        </div>
+                        <i class="bi bi-arrow-right-circle-fill text-success fs-4"></i>
+                    </a>
+
+                    <!-- Opção 2: Danilo Delacruz -->
+                    <a href="https://wa.me/554499190997?text=Ol%C3%A1%20Danilo!%20Gostaria%20de%20agendar%20um%20hor%C3%A1rio%20na%20Delacruz%20Barber." 
+                       target="_blank" 
+                       class="text-decoration-none p-3 rounded-3 d-flex align-items-center gap-3 text-white shadow-sm"
+                       style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1.5px solid rgba(245, 158, 11, 0.5); transition: transform 0.2s, border-color 0.2s;">
+                        <div class="avatar-mini-whats bg-warning text-dark fw-bold shadow" style="width: 46px; height: 46px; font-size: 1.2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">D</div>
+                        <div class="flex-grow-1 text-start overflow-hidden">
+                            <span class="badge bg-warning text-dark mb-1" style="font-size: 0.65rem;">Barbeiro Chefe</span>
+                            <strong class="d-block text-white fs-6">Danilo Delacruz</strong>
+                            <span class="text-warning fw-bold d-block text-truncate" style="font-size: 0.82rem;"><i class="bi bi-whatsapp me-1"></i>(44) 9919-0997</span>
+                        </div>
+                        <i class="bi bi-arrow-right-circle-fill text-warning fs-4"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- BOTÃO FLUTUANTE WHATSAPP RÁPIDO -->
-    <a href="https://wa.me/554499190997?text=Ol%C3%A1!%20Gostaria%20de%20tirar%20uma%20d%C3%BAvida%20sobre%20os%20servi%C3%A7os%20da%20Delacruz%20Barber" 
-       target="_blank" 
-       class="whatsapp-float-btn" 
-       aria-label="Fale conosco no WhatsApp" 
-       title="Fale conosco no WhatsApp">
-        <i class="bi bi-whatsapp"></i>
-        <span class="whatsapp-float-tooltip">Agende pelo WhatsApp</span>
-    </a>
+    <!-- MODAL SELETOR DE INSTAGRAM (DANILO E HEITOR) -->
+    <div class="modal fade" id="modalInstagram" tabindex="-1" aria-labelledby="modalInstagramLabel" aria-hidden="true" style="z-index: 1065;">
+        <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 380px;">
+            <div class="modal-content text-white shadow-lg" style="background: rgba(9, 13, 22, 0.98); backdrop-filter: blur(20px); border: 1.5px solid rgba(214, 36, 159, 0.5); border-radius: 20px;">
+                <div class="modal-header border-secondary border-opacity-25 pb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-4 text-danger"><i class="bi bi-instagram"></i></span>
+                        <div>
+                            <h5 class="modal-title fw-bold text-white fs-6 mb-0" id="modalInstagramLabel">Instagram dos Barbeiros</h5>
+                            <small class="text-white-50" style="font-size: 0.75rem;">Acompanhe os cortes e novidades:</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body p-3 d-flex flex-column gap-3">
+                    <!-- Opção 1: Heitor Pontes -->
+                    <a href="https://www.instagram.com/barber.heitorr" 
+                       target="_blank" 
+                       class="text-decoration-none p-3 rounded-3 d-flex align-items-center gap-3 text-white shadow-sm"
+                       style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1.5px solid rgba(34, 197, 94, 0.5); transition: transform 0.2s, border-color 0.2s;">
+                        <div class="avatar-mini-insta bg-success text-white fw-bold shadow" style="width: 46px; height: 46px; font-size: 1.2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">H</div>
+                        <div class="flex-grow-1 text-start overflow-hidden">
+                            <span class="badge bg-success text-white mb-1" style="font-size: 0.65rem;">Barbeiro</span>
+                            <strong class="d-block text-white fs-6">Heitor Pontes</strong>
+                            <span class="text-success fw-bold d-block text-truncate" style="font-size: 0.82rem;"><i class="bi bi-instagram me-1"></i>@barber.heitorr</span>
+                        </div>
+                        <i class="bi bi-box-arrow-up-right text-white-50 fs-5"></i>
+                    </a>
+
+                    <!-- Opção 2: Danilo Delacruz -->
+                    <a href="https://www.instagram.com/danilo_delacz" 
+                       target="_blank" 
+                       class="text-decoration-none p-3 rounded-3 d-flex align-items-center gap-3 text-white shadow-sm"
+                       style="background: linear-gradient(135deg, rgba(214, 36, 159, 0.18) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1.5px solid rgba(214, 36, 159, 0.5); transition: transform 0.2s, border-color 0.2s;">
+                        <div class="avatar-mini-insta bg-warning text-dark fw-bold shadow" style="width: 46px; height: 46px; font-size: 1.2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">D</div>
+                        <div class="flex-grow-1 text-start overflow-hidden">
+                            <span class="badge bg-warning text-dark mb-1" style="font-size: 0.65rem;">Barbeiro Chefe</span>
+                            <strong class="d-block text-white fs-6">Danilo Delacruz</strong>
+                            <span class="text-warning fw-bold d-block text-truncate" style="font-size: 0.82rem;"><i class="bi bi-instagram me-1"></i>@danilo_delacz</span>
+                        </div>
+                        <i class="bi bi-box-arrow-up-right text-white-50 fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÃO FLUTUANTE VOLTAR AO TOPO -->
+    <button type="button" class="back-to-top-btn" id="backToTopBtn" aria-label="Voltar ao topo da página" title="Voltar ao topo">
+        <i class="bi bi-chevron-up"></i>
+    </button>
 
     <!-- Scripts: jQuery, Bootstrap 5, Plugins jQuery (Mask & DataTables) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -326,8 +412,8 @@
     <!-- Plugin jQuery 2: jQuery DataTables (Requisito 3º Trimestre) -->
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <!-- Custom JS -->
-    <script src="{% static 'website/js/main.js' %}"></script>
+    <!-- Custom JS (com cache buster) -->
+    <script src="{% static 'website/js/main.js' %}?v=3.3"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
