@@ -4,9 +4,14 @@ from django.urls import reverse_lazy
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.http import JsonResponse
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib.auth.views import (
+    LoginView, LogoutView, PasswordChangeView,
+    PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+)
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
+from django.core.mail import send_mail
+from django.conf import settings
 from django.db.models import Sum, Avg, Count, Q
 from datetime import date, datetime, timedelta
 
@@ -25,8 +30,10 @@ from .forms import (
     AgendamentoForm, AgendamentoPublicoForm, MensagemContatoForm,
     FeedbackForm, FotoTrabalhoForm, PerfilClienteForm,
     BloqueioHorarioForm, FichaClienteForm, FilaEsperaForm,
-    VendaProdutoRapidaForm, CupomDescontoForm, PlanoAssinaturaForm
+    VendaProdutoRapidaForm, CupomDescontoForm, PlanoAssinaturaForm,
+    RecuperarUsuarioForm
 )
+from .filters import AgendamentoFilter, ServicoFilter, ClienteFilter
 from .pix import gerar_payload_pix, gerar_url_qrcode_pix
 
 # --- SECURITY MIXINS ---
@@ -403,6 +410,61 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
 
     def form_valid(self, form):
         messages.success(self.request, "Senha alterada com sucesso! ✅")
+        return super().form_valid(form)
+
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = "website/registration/password_reset_form.html"
+    email_template_name = "website/registration/password_reset_email.html"
+    subject_template_name = "website/registration/password_reset_subject.txt"
+    success_url = reverse_lazy("password_reset_done")
+    extra_context = {"titulo": "Recuperar Senha", "botao": "Enviar Link de Recuperação"}
+
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = "website/registration/password_reset_done.html"
+
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = "website/registration/password_reset_confirm.html"
+    success_url = reverse_lazy("password_reset_complete")
+    extra_context = {"titulo": "Definir Nova Senha", "botao": "Salvar Nova Senha"}
+
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = "website/registration/password_reset_complete.html"
+
+
+class RecuperarUsuarioView(FormView):
+    form_class = RecuperarUsuarioForm
+    template_name = "website/registration/recuperar_usuario.html"
+    success_url = reverse_lazy("login")
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"].strip()
+        users = User.objects.filter(email__iexact=email, is_active=True)
+        if users.exists():
+            usernames = [u.username for u in users]
+            nomes = ", ".join(usernames)
+            corpo = (
+                f"Olá!\n\n"
+                f"Você solicitou a recuperação do seu nome de usuário no sistema Delacruz Barber.\n\n"
+                f"Usuário(s) associado(s) a este e-mail: {nomes}\n\n"
+                f"Acesse o sistema: {self.request.build_absolute_uri(reverse_lazy('login'))}\n\n"
+                f"Atenciosamente,\n"
+                f"Equipe Delacruz Barber"
+            )
+            send_mail(
+                subject="Recuperação de Nome de Usuário - Delacruz Barber",
+                message=corpo,
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "contato@delacruzbarber.com.br"),
+                recipient_list=[email],
+                fail_silently=True,
+            )
+        messages.success(
+            self.request,
+            "Se o e-mail informado estiver cadastrado, enviamos o seu nome de usuário! Verifique sua caixa de entrada."
+        )
         return super().form_valid(form)
 
 
@@ -992,14 +1054,21 @@ class ServicoListView(AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = Servico.objects.filter(usuario=self.request.user)
+        self.filterset = ServicoFilter(self.request.GET, queryset=queryset)
+        qs = self.filterset.qs
         busca = self.request.GET.get("q")
         if busca:
-            queryset = queryset.filter(
+            qs = qs.filter(
                 Q(nome__icontains=busca) |
                 Q(categoria__icontains=busca) |
                 Q(descricao__icontains=busca)
             )
-        return queryset.order_by("ordem")
+        return qs.order_by("ordem", "nome")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter"] = self.filterset
+        return context
 
 class ServicoDetailView(AdminRequiredMixin, DetailView):
     model = Servico
@@ -1122,15 +1191,21 @@ class ClienteListView(AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = Cliente.objects.filter(usuario=self.request.user)
+        self.filterset = ClienteFilter(self.request.GET, queryset=queryset)
+        qs = self.filterset.qs
         busca = self.request.GET.get("q")
-
         if busca:
-            queryset = queryset.filter(
+            qs = qs.filter(
                 Q(nome__icontains=busca) |
-                Q(email__icontains=busca)
+                Q(email__icontains=busca) |
+                Q(telefone__icontains=busca)
             )
+        return qs.order_by("nome")
 
-        return queryset.order_by("nome")
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter"] = self.filterset
+        return context
 
 class ClienteDetailView(AdminRequiredMixin, DetailView):
     model = Cliente
@@ -1260,15 +1335,22 @@ class AgendamentoListView(GroupRequiredMixin, AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = Agendamento.objects.select_related("cliente", "servico", "barbeiro").filter(usuario=self.request.user)
+        self.filterset = AgendamentoFilter(self.request.GET, queryset=queryset)
+        qs = self.filterset.qs
         busca = self.request.GET.get("q")
         if busca:
-            queryset = queryset.filter(
+            qs = qs.filter(
                 Q(cliente__nome__icontains=busca) |
                 Q(barbeiro__nome__icontains=busca) |
                 Q(servico__nome__icontains=busca) |
                 Q(status__icontains=busca)
             )
-        return queryset.order_by("-data", "-horario")
+        return qs.order_by("-data", "-horario")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter"] = self.filterset
+        return context
 
 class AgendamentoDetailView(AdminRequiredMixin, DetailView):
     model = Agendamento

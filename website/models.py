@@ -47,6 +47,7 @@ class Barbeiro(models.Model):
     imagem_url = models.CharField(max_length=255, blank=True, null=True)
     ativo = models.BooleanField(default=True)
     percentual_comissao = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    custo_fixo_mensal = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=True, null=True)
     cadastrado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 

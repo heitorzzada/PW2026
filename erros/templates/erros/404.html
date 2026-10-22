@@ -1,0 +1,17 @@
+{% extends "erros/base_error.html" %}
+
+{% block error_code %}404 Página Não Encontrada{% endblock %}
+{% block glow_color %}glow-green{% endblock %}
+
+{% block icon_box_class %}bg-success bg-opacity-10 text-success border border-success border-opacity-25{% endblock %}
+{% block error_icon %}<i class="bi bi-compass"></i>{% endblock %}
+
+{% block badge_class %}bg-success bg-opacity-25 text-success border border-success border-opacity-50{% endblock %}
+{% block code_number %}404{% endblock %}
+{% block big_number %}404{% endblock %}
+
+{% block error_title %}Página Não Encontrada{% endblock %}
+{% block error_message %}
+    O endereço solicitado não foi encontrado no sistema da <strong>Delacruz Barber</strong>.
+    O link pode ter sido alterado, digitado incorretamente ou a página não está mais disponível.
+{% endblock %}

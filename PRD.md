@@ -72,6 +72,7 @@ O sistema contempla:
 - RF17: O sistema deve disponibilizar a seção Delacruz Academy com informações do Curso de Barbeiro Profissional (R$ 1.500,00), ministrado por Danilo Delacruz, com foto de alunos formados, ementa prática e botão direto de matrícula via WhatsApp.
 - RF18: O sistema deve disponibilizar mapa interativo e botões de rotas diretas (Google Maps, Waze e Uber) para a localização física oficial na Rua Terezinha Fortes Martins, Centro, Paranavaí - PR (CEP 87704-030).
 - RF19: O sistema deve cumprir 100% da rubrica IFPR (Diagramas UML de Casos de Uso e Classes na página /sobre/, plugins jQuery Mask e DataTables, e filtros de busca por ?q= com paginação em todas as ListViews).
+- RF20: O sistema deve fornecer páginas de erro HTTP customizadas (400 Bad Request, 403 Forbidden, 404 Not Found e 500 Internal Server Error) estilizadas na identidade visual da Delacruz Barber (dark glassmorphism com Bootstrap 5), ativas em produção (Google App Engine com DEBUG=False) e navegáveis com rotas de pré-visualização.
 
 ## Requisitos Não Funcionais
 - Uso de Bootstrap 5 para responsividade.

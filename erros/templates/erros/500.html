@@ -1,0 +1,33 @@
+{% extends "erros/base_error.html" %}
+
+{% block error_code %}500 Instabilidade no Servidor{% endblock %}
+{% block glow_color %}glow-red{% endblock %}
+
+{% block icon_box_class %}bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25{% endblock %}
+{% block error_icon %}<i class="bi bi-cpu-fill"></i>{% endblock %}
+
+{% block badge_class %}bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50{% endblock %}
+{% block code_number %}500{% endblock %}
+{% block big_number %}500{% endblock %}
+
+{% block error_title %}Instabilidade Temporária no Servidor{% endblock %}
+{% block error_message %}
+    Ocorreu uma falha inesperada ao processar sua solicitação no servidor. Fique tranquilo: nossa equipe técnica já foi notificada para restabelecer a estabilidade. Se você estava realizando um agendamento urgente, entre em contato direto pelo WhatsApp.
+{% endblock %}
+
+{% block error_extra_content %}
+<div class="mt-4 p-3 rounded-3 text-start border border-danger border-opacity-25" style="background: rgba(239, 68, 68, 0.08);">
+    <div class="d-flex align-items-center gap-2 mb-2 text-danger fw-semibold">
+        <i class="bi bi-whatsapp fs-5"></i>
+        <span>Precisa agendar com urgência? Fale direto com nossos barbeiros:</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="https://wa.me/5544991022176?text=Ol%C3%A1%20Heitor!%20O%20site%20apresentou%20instabilidade%20e%20gostaria%20de%20agendar%20um%20hor%C3%A1rio." target="_blank" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1">
+            <i class="bi bi-whatsapp"></i> WhatsApp Heitor: (44) 99102-2176
+        </a>
+        <a href="https://wa.me/554499190997?text=Ol%C3%A1%20Danilo!%20O%20site%20apresentou%20instabilidade%20e%20gostaria%20de%20agendar%20um%20hor%C3%A1rio." target="_blank" class="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1">
+            <i class="bi bi-whatsapp"></i> WhatsApp Danilo: (44) 9919-0997
+        </a>
+    </div>
+</div>
+{% endblock %}

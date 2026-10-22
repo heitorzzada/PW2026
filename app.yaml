@@ -2,6 +2,9 @@ runtime: python312
 
 entrypoint: gunicorn -b :$PORT BarberProject.wsgi
 
+env_variables:
+  DEBUG: "False"
+
 handlers:
 
 - url: /static
@@ -17,4 +20,4 @@ automatic_scaling:
 
   min_instances: 0
 
-  max_instances: 2
+  max_instances: 1

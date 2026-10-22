@@ -24,6 +24,7 @@ from django.views.static import serve
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("website.urls")),
+    path("erros/", include("erros.urls")),
     re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
 ]
 
@@ -31,5 +32,11 @@ if settings.DEBUG:
     urlpatterns += [
         path("debug/", include("debug_toolbar.urls")),
     ]
+
+# Handlers para renderização de erros com DEBUG=False
+handler400 = "erros.views.error_400"
+handler403 = "erros.views.error_403"
+handler404 = "erros.views.error_404"
+handler500 = "erros.views.error_500"
 
 

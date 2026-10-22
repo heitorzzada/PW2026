@@ -1,0 +1,35 @@
+{% extends "website/modelo.html" %}
+{% load crispy_forms_tags %}
+
+{% block titulo_pagina %}Alterar Senha - Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card glass-card p-4">
+                    <div class="text-center mb-4">
+                        <h1 class="h2 text-white">Alterar Senha</h1>
+                        <p class="text-secondary small">Preencha o formulário abaixo para atualizar sua senha</p>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <div class="auth-actions">
+                            <button type="submit" class="btn btn-delacruz">
+                                Alterar Senha
+                            </button>
+                            <a href="{% url 'redirecionar_usuario' %}" class="btn btn-delacruz-outline">
+                                Voltar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

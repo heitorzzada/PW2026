@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="{% static 'website/css/style.css' %}?v=3.3">
     <!-- DataTables Bootstrap 5 CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <!-- Plugin jQuery 4 CSS: Magnific Popup (Galeria de Fotos / Lightbox) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -412,8 +414,12 @@
     <!-- Plugin jQuery 2: jQuery DataTables (Requisito 3º Trimestre) -->
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Plugin jQuery 3: Bootbox.js - Diálogos e Modais de Confirmação (Requisito 3º Trimestre) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/6.0.0/bootbox.min.js"></script>
+    <!-- Plugin jQuery 4: Magnific Popup - Galeria de Fotos / Lightbox (Requisito 3º Trimestre) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
     <!-- Custom JS (com cache buster) -->
-    <script src="{% static 'website/js/main.js' %}?v=3.3"></script>
+    <script src="{% static 'website/js/main.js' %}?v=3.4"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

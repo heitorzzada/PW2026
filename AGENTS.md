@@ -23,9 +23,11 @@ O objetivo deste sistema é automatizar a gestão de uma barbearia, facilitando 
 ## Estrutura de Diretórios
 - `BarberProject/`: Configurações globais do Django (settings, wsgi, asgi, urls).
 - `website/`: Aplicação principal contendo models, views, forms, migrations e templates.
+- `erros/`: Aplicação para tratamento e renderização de erros HTTP customizados (400, 403, 404, 500) com DEBUG=False.
 - `static/`: Arquivos estáticos globais (css, imagens).
 - `website/static/website/`: Arquivos estáticos da aplicação (js, css, imagens).
 - `website/templates/`: Estrutura de visualização (HTMLs).
+- `erros/templates/erros/`: Templates de páginas de erro com estética glassmorphism dark.
 
 ## Convenções de Código
 - Código escrito em Python respeitando o padrão PEP 8.
@@ -63,6 +65,41 @@ O objetivo deste sistema é automatizar a gestão de uma barbearia, facilitando 
 ## Convenções para Commits Git
 - Utilize mensagens claras e concisas seguindo o formato: `tipo: descrição breve da alteração`
 - Exemplos: `feat: add relatorio de barbeiro`, `fix: correcao no cadastro de agendamento`, `docs: atualização do PRD`.
+- Consulte a skill `.agents/skills/git-commit/SKILL.md` para a especificação completa.
+
+## Skills para Agentes de IA
+O projeto conta com skills dedicadas localizadas em `.agents/skills/`:
+1. **`git-commit`**: Padronização rigorosa das mensagens de commit Git conforme o padrão do IFPR/Conventional Commits.
+2. **`seed-catalog`**: Guia para criação/aplicação de migrações e semeadura do catálogo e perfis do Delacruz Barber.
+3. **`security-audit`**: Diretrizes de segurança, proteção via `LoginRequiredMixin`/`GroupRequiredMixin`, isolamento de registros por usuário via `get_queryset()` e framework de mensagens.
+
+## Gestão de Custos e Manutenção no Google Cloud (GCP)
+### 1. Política de Limpeza Automática do Artifact Registry
+O projeto mantém na raiz o arquivo `cleanup-policy.json` para evitar cobranças por acúmulo de imagens Docker antigas geradas nos deploys do App Engine.
+Para reaplicar a política no repositório oficial:
+```bash
+gcloud artifacts repositories set-cleanup-policies gae-standard --location=southamerica-east1 --policy=cleanup-policy.json --no-dry-run
+```
+- **Regras configuradas**:
+  - Manter imagem com tag `latest` (`action: Keep`).
+  - Manter as 2 versões mais recentes (`mostRecentVersions.keepCount: 2`).
+  - Excluir versões com mais de 1 dia / 86400s (`action: Delete`, `olderThan: 86400s`).
+
+### 2. Auditoria e Limpeza de Versões Antigas do App Engine
+Para manter o ambiente limpo e evitar instâncias ou versões legadas consumindo recursos:
+1. Listar versões existentes:
+   ```bash
+   gcloud app versions list
+   ```
+2. Identificar versões com `TRAFFIC_SPLIT` igual a `0.00` (versões inativas).
+3. Excluir versões inativas com segurança (**NUNCA** excluir a versão com `TRAFFIC_SPLIT` igual a `1.00`):
+   ```bash
+   gcloud app versions delete <VERSAO_ID_1> <VERSAO_ID_2> --quiet
+   ```
+4. Confirmar que apenas a versão ativa permaneceu:
+   ```bash
+   gcloud app versions list
+   ```
 
 ## Como Documentar Alterações
 - Toda nova funcionalidade deve ser documentada no `PRD.md`.
@@ -76,3 +113,4 @@ O objetivo deste sistema é automatizar a gestão de uma barbearia, facilitando 
 
 ## Referência ao PRD.md
 Para mais detalhes sobre os requisitos funcionais, regras de negócio e critérios de aceitação, consulte o arquivo `PRD.md` na raiz deste repositório.
+

@@ -423,3 +423,15 @@ class PlanoAssinaturaForm(forms.ModelForm):
             "ordem": forms.NumberInput(attrs={"class": "form-control"}),
         }
 
+
+class RecuperarUsuarioForm(forms.Form):
+    email = forms.EmailField(
+        label="E-mail cadastrado",
+        widget=forms.EmailInput(attrs={
+            "class": "form-control",
+            "placeholder": "Digite seu e-mail cadastrado...",
+            "autocomplete": "email"
+        }),
+        help_text="Enviaremos o seu nome de usuário para este e-mail."
+    )
+

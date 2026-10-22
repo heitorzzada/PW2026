@@ -1,0 +1,17 @@
+{% extends "erros/base_error.html" %}
+
+{% block error_code %}400 Requisição Inválida{% endblock %}
+{% block glow_color %}glow-blue{% endblock %}
+
+{% block icon_box_class %}bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25{% endblock %}
+{% block error_icon %}<i class="bi bi-patch-exclamation-fill"></i>{% endblock %}
+
+{% block badge_class %}bg-primary bg-opacity-25 text-info border border-info border-opacity-50{% endblock %}
+{% block code_number %}400{% endblock %}
+{% block big_number %}400{% endblock %}
+
+{% block error_title %}Requisição Inválida{% endblock %}
+{% block error_message %}
+    A solicitação enviada contém parâmetros inválidos, incompletos ou dados em formato não reconhecido pelo servidor da <strong>Delacruz Barber</strong>.
+    Por favor, retorne à página anterior e tente submeter as informações novamente.
+{% endblock %}

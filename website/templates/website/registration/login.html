@@ -1,0 +1,50 @@
+{% extends "website/modelo.html" %}
+{% load crispy_forms_tags %}
+
+{% block titulo_pagina %}Entrar - Delacruz Barber{% endblock %}
+
+{% block conteudo %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card glass-card p-4">
+                    <div class="text-center mb-4">
+                        <h1 class="h2 text-white">Login</h1>
+                        <p class="text-secondary small">Entre com sua conta para gerenciar agendamentos</p>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <div class="auth-actions">
+                            <button type="submit" class="btn btn-delacruz">
+                                Entrar
+                            </button>
+
+                            <a href="{% url 'pagina_inicial' %}" class="btn btn-delacruz-outline">
+                                Voltar
+                            </a>
+                        </div>
+                    </form>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+                        <a href="{% url 'password_reset' %}" class="text-warning small text-decoration-none">
+                            <i class="bi bi-key me-1"></i>Esqueceu a senha?
+                        </a>
+                        <a href="{% url 'recuperar_usuario' %}" class="text-info small text-decoration-none">
+                            <i class="bi bi-person-badge me-1"></i>Esqueceu o usuário?
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-4 border-top border-secondary pt-3">
+                        <span class="text-secondary small">Não possui uma conta?</span>
+                        <a href="{% url 'cadastro' %}" class="text-success small fw-bold ms-1 text-decoration-none">Cadastre-se</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

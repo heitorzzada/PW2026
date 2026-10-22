@@ -1,0 +1,244 @@
+{% extends "website/modelo.html" %}
+{% load static %}
+
+{% block titulo_pagina %}{% block error_code %}Erro{% endblock %} - Delacruz Barber{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-wrapper {
+        min-height: calc(85vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        position: relative;
+    }
+    
+    .error-card {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        max-width: 760px;
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .error-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    .error-glow {
+        position: absolute;
+        top: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.25;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .glow-green { background: #22c55e; }
+    .glow-red { background: #ef4444; }
+    .glow-amber { background: #f59e0b; }
+    .glow-blue { background: #3b82f6; }
+
+    .error-code-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1.2rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    .error-number {
+        font-size: clamp(4.5rem, 12vw, 8rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #ffffff 40%, rgba(255,255,255,0.4) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .error-icon-box {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.75rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        animation: pulseIcon 3s ease-in-out infinite;
+    }
+
+    @keyframes pulseIcon {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .nav-suggestion-card {
+        background: rgba(30, 41, 59, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        color: #f8fafc;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        transition: all 0.25s ease;
+    }
+
+    .nav-suggestion-card:hover {
+        background: rgba(34, 197, 94, 0.12);
+        border-color: rgba(34, 197, 94, 0.4);
+        color: #22c55e;
+        transform: translateY(-2px);
+    }
+
+    .nav-suggestion-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}
+
+{% block conteudo %}
+<div class="error-wrapper">
+    <div class="error-card p-4 p-md-5 text-center">
+        <!-- Glow ambiental -->
+        <div class="error-glow {% block glow_color %}glow-green{% endblock %}"></div>
+
+        <div class="position-relative" style="z-index: 1;">
+            <!-- Ícone estilizado com animação -->
+            <div class="error-icon-box {% block icon_box_class %}bg-success bg-opacity-10 text-success border border-success border-opacity-25{% endblock %}">
+                {% block error_icon %}<i class="bi bi-compass"></i>{% endblock %}
+            </div>
+
+            <!-- Badge de Código de Erro -->
+            <div>
+                <span class="error-code-badge {% block badge_class %}bg-success bg-opacity-25 text-success border border-success border-opacity-50{% endblock %}">
+                    {% block badge_text %}Código HTTP: {% block code_number %}404{% endblock %}{% endblock %}
+                </span>
+            </div>
+
+            <!-- Grande Número do Erro -->
+            <div class="error-number">{% block big_number %}404{% endblock %}</div>
+
+            <!-- Título e Mensagem -->
+            <h1 class="h2 fw-bold text-white mb-3">{% block error_title %}Página Não Encontrada{% endblock %}</h1>
+            <p class="text-white-50 fs-6 mx-auto mb-4" style="max-width: 580px;">
+                {% block error_message %}O link que você seguiu pode estar quebrado ou a página foi movida para outro endereço.{% endblock %}
+            </p>
+
+            <!-- Ações Principais -->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+                <a href="{% url 'pagina_inicial' %}" class="btn btn-delacruz px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm">
+                    <i class="bi bi-house-door-fill"></i>
+                    <span>Voltar ao Início</span>
+                </a>
+                <a href="{% url 'agendamento' %}" class="btn btn-delacruz-outline px-4 py-2 d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-calendar2-check-fill"></i>
+                    <span>Agendar Horário</span>
+                </a>
+                <button type="button" class="btn btn-outline-light px-3 py-2 d-inline-flex align-items-center gap-2 border-secondary" onclick="window.history.length > 1 ? window.history.back() : window.location.href='{% url 'pagina_inicial' %}'">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Página Anterior</span>
+                </button>
+            </div>
+
+            <!-- Sugestões de Navegação Rápida -->
+            <div class="border-top border-secondary border-opacity-25 pt-4 text-start">
+                <p class="text-white-50 small text-center mb-3">Você também pode acessar rapidamente:</p>
+                <div class="row g-2 justify-content-center">
+                    <div class="col-sm-6 col-md-3">
+                        <a href="{% url 'servicos' %}" class="nav-suggestion-card">
+                            <div class="nav-suggestion-icon text-success"><i class="bi bi-scissors"></i></div>
+                            <div class="overflow-hidden">
+                                <span class="d-block fw-semibold small text-truncate">Serviços</span>
+                                <small class="text-white-50" style="font-size: 0.72rem;">Cortes e Barba</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <a href="{% url 'barbeiros' %}" class="nav-suggestion-card">
+                            <div class="nav-suggestion-icon text-warning"><i class="bi bi-people-fill"></i></div>
+                            <div class="overflow-hidden">
+                                <span class="d-block fw-semibold small text-truncate">Equipe</span>
+                                <small class="text-white-50" style="font-size: 0.72rem;">Nossos Barbeiros</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <a href="{% url 'clube_planos' %}" class="nav-suggestion-card">
+                            <div class="nav-suggestion-icon text-warning"><i class="bi bi-crown-fill"></i></div>
+                            <div class="overflow-hidden">
+                                <span class="d-block fw-semibold small text-truncate">Clube VIP</span>
+                                <small class="text-white-50" style="font-size: 0.72rem;">Cortes Ilimitados</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <a href="{% url 'contato' %}" class="nav-suggestion-card">
+                            <div class="nav-suggestion-icon text-info"><i class="bi bi-chat-dots-fill"></i></div>
+                            <div class="overflow-hidden">
+                                <span class="d-block fw-semibold small text-truncate">Contato</span>
+                                <small class="text-white-50" style="font-size: 0.72rem;">Fale Conosco</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% block error_extra_content %}{% endblock %}
+
+            <!-- Informações Técnicas Opcionais (apenas se path ou exception disponíveis) -->
+            {% if path or exception %}
+            <div class="mt-4 pt-3 text-start">
+                <details class="text-white-50 small bg-black bg-opacity-25 rounded-3 p-3 border border-secondary border-opacity-25">
+                    <summary class="cursor-pointer fw-semibold text-white-50 mb-2" style="cursor: pointer;">
+                        <i class="bi bi-info-circle me-1"></i> Detalhes técnicos da requisição
+                    </summary>
+                    {% if path %}
+                    <div class="font-monospace small text-white-50 mt-1">
+                        <strong>Caminho:</strong> <code>{{ path }}</code>
+                    </div>
+                    {% endif %}
+                    {% if exception %}
+                    <div class="font-monospace small text-white-50 mt-1">
+                        <strong>Detalhe:</strong> <code>{{ exception }}</code>
+                    </div>
+                    {% endif %}
+                </details>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

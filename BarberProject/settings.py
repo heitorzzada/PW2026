@@ -27,11 +27,31 @@ load_dotenv(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+import platform
+import sys
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-u(o1%2t%y=)5%%0)=afw24!azlt*-a0*zyk$y4dtjrb0yjn745"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Configuração de DEBUG:
+# - Google App Engine (ou qualquer servidor não-Windows): DEBUG = False
+# - Windows (ambiente de desenvolvimento local): DEBUG = True por padrão
+#   (permite definir DEBUG=False no arquivo .env para testar as páginas de erro localmente)
+IS_GAE = bool(
+    os.getenv("GAE_APPLICATION")
+    or os.getenv("GAE_ENV")
+    or os.getenv("SERVER_SOFTWARE", "").startswith("Google")
+)
+IS_WINDOWS = sys.platform.startswith("win") or platform.system() == "Windows" or os.name == "nt"
+
+if IS_GAE or not IS_WINDOWS:
+    DEBUG = False
+else:
+    env_debug = os.getenv("DEBUG")
+    if env_debug is not None:
+        DEBUG = env_debug.strip().lower() in ("true", "1", "t", "yes")
+    else:
+        DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -57,8 +77,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "crispy_forms",
     "crispy_bootstrap5",
+    "django_filters",
     "debug_toolbar",
     "website.apps.WebsiteConfig",
+    "erros.apps.ErrosConfig",
 ]
 
 MIDDLEWARE = [
@@ -180,4 +202,8 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "redirecionar_usuario"
 LOGOUT_REDIRECT_URL = "pagina_inicial"
+
+# Email Configuration (Console backend para desenvolvimento e recuperação de senha/usuário)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "contato@delacruzbarber.com.br"
 

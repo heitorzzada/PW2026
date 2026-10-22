@@ -307,3 +307,55 @@ class SubscriptionPlanLogicTestCase(TestCase):
         assinatura.save()
         self.assertFalse(assinatura.tem_cortes_disponiveis())
 
+
+class Trimestre3RequirementsTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_superuser(
+            username="admin_test", email="admin_test@delacruz.com", password="password123"
+        )
+        PerfilUsuario.objects.create(usuario=self.user, tipo_usuario="administrador")
+        self.client = Client()
+        self.client.login(username="admin_test", password="password123")
+
+    def test_param_replace_templatetag(self):
+        from website.templatetags.paginacao_tags import param_replace
+        from django.test.client import RequestFactory
+        factory = RequestFactory()
+        request = factory.get("/listar/agendamentos/?status=confirmado&barbeiro=1&page=1")
+        context = {"request": request}
+        
+        result = param_replace(context, page=2)
+        self.assertIn("page=2", result)
+        self.assertIn("status=confirmado", result)
+        self.assertIn("barbeiro=1", result)
+
+    def test_django_filter_views_integration(self):
+        servico1 = Servico.objects.create(
+            usuario=self.user, nome="Degradê Navalhado", preco=Decimal("45.00"), duracao_minutos=30, categoria="Corte"
+        )
+        servico2 = Servico.objects.create(
+            usuario=self.user, nome="Barba Terapia", preco=Decimal("35.00"), duracao_minutos=30, categoria="Barba"
+        )
+
+        resp = self.client.get(reverse("listar_servicos"), {"nome": "Degradê"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("filter", resp.context)
+        self.assertIn(servico1, resp.context["servicos"])
+        self.assertNotIn(servico2, resp.context["servicos"])
+
+    def test_password_and_username_recovery(self):
+        # 1. Password reset form
+        resp_pw = self.client.get(reverse("password_reset"))
+        self.assertEqual(resp_pw.status_code, 200)
+        self.assertContains(resp_pw, "Recuperar Senha")
+
+        # 2. Username recovery form GET
+        resp_user_get = self.client.get(reverse("recuperar_usuario"))
+        self.assertEqual(resp_user_get.status_code, 200)
+        self.assertContains(resp_user_get, "Esqueceu seu Usuário")
+
+        # 3. Username recovery POST with valid email
+        resp_user_post = self.client.post(reverse("recuperar_usuario"), {"email": "admin_test@delacruz.com"})
+        self.assertEqual(resp_user_post.status_code, 302)
+
+

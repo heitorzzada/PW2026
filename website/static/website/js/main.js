@@ -47,6 +47,63 @@ $(document).ready(function () {
             }
         });
     }
+
+    // =========================================================
+    // PLUGIN JQUERY 3: BOOTBOX.JS (Requisito 3º Trimestre)
+    // =========================================================
+    if (typeof bootbox !== "undefined") {
+        // Intercepta botões de exclusão ou cancelamento com confirmação moderna em modal
+        $(document).on("click", "a[href*='/excluir/'], .btn-confirm-action, a[href*='/cancelar/']", function (e) {
+            e.preventDefault();
+            var targetUrl = $(this).attr("href");
+            var isCancel = targetUrl.indexOf("/cancelar/") !== -1;
+            var actionTitle = isCancel ? "Confirmar Cancelamento" : "Confirmar Exclusão";
+            var actionMsg = isCancel 
+                ? "Deseja realmente cancelar este agendamento? Esta ação liberará o horário para outros clientes."
+                : "Tem certeza de que deseja excluir este registro? Essa operação não poderá ser desfeita.";
+            var btnConfirmLabel = isCancel ? "<i class='bi bi-x-circle-fill me-1'></i> Sim, Cancelar" : "<i class='bi bi-trash-fill me-1'></i> Sim, Excluir";
+            var btnClass = isCancel ? "btn-warning btn-sm" : "btn-danger btn-sm";
+
+            bootbox.confirm({
+                title: "<i class='bi bi-exclamation-triangle-fill text-warning me-2'></i> " + actionTitle,
+                message: "<p class='mb-0 text-secondary'>" + actionMsg + "</p>",
+                buttons: {
+                    cancel: {
+                        label: "<i class='bi bi-arrow-left me-1'></i> Voltar",
+                        className: "btn-outline-secondary btn-sm"
+                    },
+                    confirm: {
+                        label: btnConfirmLabel,
+                        className: btnClass
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        window.location.href = targetUrl;
+                    }
+                }
+            });
+        });
+    }
+
+    // =========================================================
+    // PLUGIN JQUERY 4: JQUERY MAGNIFIC POPUP (Requisito 3º Trimestre)
+    // =========================================================
+    if ($.fn.magnificPopup) {
+        $('.image-popup-gallery, .gallery-lightbox, a[href*="diagrama-"], .hover-zoom').parent('a').magnificPopup({
+            type: 'image',
+            closeOnContentClick: true,
+            mainClass: 'mfp-img-mobile mfp-fade',
+            image: {
+                verticalFit: true
+            },
+            gallery: {
+                enabled: true,
+                navigateByImgClick: true,
+                preload: [0, 1]
+            }
+        });
+    }
 });
 
 document.addEventListener("DOMContentLoaded", function () {

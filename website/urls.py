@@ -3,6 +3,8 @@ from .views import (
     IndexView, ServicosPublicView, BarbeirosPublicView, SobreView,
     ContatoCreateView, AgendamentoPublicoView, CadastroUsuarioView,
     RedirecionarUsuarioView, CustomLoginView, CustomLogoutView, CustomPasswordChangeView,
+    CustomPasswordResetView, CustomPasswordResetDoneView, CustomPasswordResetConfirmView,
+    CustomPasswordResetCompleteView, RecuperarUsuarioView,
     HorariosDisponiveisView,
     
     # Client Area Views
@@ -61,6 +63,11 @@ urlpatterns = [
     path("login/", CustomLoginView.as_view(), name="login"),
     path("logout/", CustomLogoutView.as_view(), name="logout"),
     path("alterar-senha/", CustomPasswordChangeView.as_view(), name="alterar_senha"),
+    path("recuperar-senha/", CustomPasswordResetView.as_view(), name="password_reset"),
+    path("recuperar-senha/enviado/", CustomPasswordResetDoneView.as_view(), name="password_reset_done"),
+    path("recuperar-senha/confirmar/<uidb64>/<token>/", CustomPasswordResetConfirmView.as_view(), name="password_reset_confirm"),
+    path("recuperar-senha/concluido/", CustomPasswordResetCompleteView.as_view(), name="password_reset_complete"),
+    path("recuperar-usuario/", RecuperarUsuarioView.as_view(), name="recuperar_usuario"),
     path("redirecionar/", RedirecionarUsuarioView.as_view(), name="redirecionar_usuario"),
     
     # Available times helper
