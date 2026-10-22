@@ -74,20 +74,6 @@ Sistema completo de agendamento online e gerenciamento interno para a **Delacruz
    ```bash
    python manage.py runserver
    ```
-
-## Contas de Teste Pré-configuradas (Seeded)
-
-- **Administrador**:
-  - Usuário: `admin`
-  - Senha: `admin`
-
-- **Barbeiro Danilo Delacruz**:
-  - Usuário: `danilo`
-  - Senha: `123456`
-
-- **Barbeiro Heitor Pontes**:
-  - Usuário: `heitor`
-  - Senha: `123456`
 =======
 # pw2026
 sim.
