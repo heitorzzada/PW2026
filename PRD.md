@@ -73,10 +73,13 @@ O sistema contempla:
 - RF18: O sistema deve disponibilizar mapa interativo e botões de rotas diretas (Google Maps, Waze e Uber) para a localização física oficial na Rua Terezinha Fortes Martins, Centro, Paranavaí - PR (CEP 87704-030).
 - RF19: O sistema deve cumprir 100% da rubrica IFPR (Diagramas UML de Casos de Uso e Classes na página /sobre/, plugins jQuery Mask e DataTables, e filtros de busca por ?q= com paginação em todas as ListViews).
 - RF20: O sistema deve fornecer páginas de erro HTTP customizadas (400 Bad Request, 403 Forbidden, 404 Not Found e 500 Internal Server Error) estilizadas na identidade visual da Delacruz Barber (dark glassmorphism com Bootstrap 5), ativas em produção (Google App Engine com DEBUG=False) e navegáveis com rotas de pré-visualização.
+- RF21: O sistema deve garantir isolamento por usuário criador (`usuario` FK via `form_valid()` e `get_queryset()`), emitir mensagens via Django Messages Framework nas operações de Create, Update e Delete, e fornecer formulários de filtro com `django-filter` integrados à paginação via template tag customizada `{% param_replace %}`.
+- RF22: O sistema deve utilizar plugins jQuery funcionais (jQuery Mask, DataTables, Bootbox.js e Magnific Popup) e permitir recuperação de senha e nome de usuário por e-mail a partir da tela de login.
+- RF23: O projeto deve manter `AGENTS.md`, skills de automação para agentes de IA (`.agents/skills/`) e configuração pronta para deploy no Google App Engine (`app.yaml`).
 
 ## Requisitos Não Funcionais
 - Uso de Bootstrap 5 para responsividade.
-- Uso de jQuery para manipulação dinâmica da interface (Plugins Mask e DataTables).
+- Uso de jQuery para manipulação dinâmica da interface (Plugins Mask, DataTables, Bootbox.js e Magnific Popup).
 - Segurança através de autenticação Django e controle de permissões por grupos (GroupRequiredMixin: Administradores, Barbeiros, Clientes).
 - Persistência em banco de dados relacional PostgreSQL (Neon Serverless DB).
 - Paleta visual customizada com destaque em Dourado/Âmbar (#fde047) e Verde (#22c55e) em estilo glassmorphism.

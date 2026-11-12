@@ -1,48 +1,53 @@
-<<<<<<< HEAD
 # Delacruz Barber - BarberProject
 
-Sistema completo de agendamento online e gerenciamento interno para a **Delacruz Barber**. Desenvolvido com Python, Django e Bootstrap 5 para atender aos requisitos acadêmicos do 1º e 2º trimestres.
+Sistema completo de agendamento online e gerenciamento para a barbearia **Delacruz Barber**, desenvolvido com Python, Django, PostgreSQL (Neon DB) e Bootstrap 5, atendendo integralmente aos requisitos dos 1º, 2º e 3º trimestres da disciplina de Programação Web (IFPR).
 
 ## Funcionalidades Principais
 
 - **Público**:
-  - Visualização da página inicial com serviços em destaque e galeria de fotos reais dos cortes.
-  - Página institucional "Sobre" com descrição e diagramas de caso de uso e classes do sistema.
-  - Contato público armazenado em banco de dados para a administração.
-  - Fluxo de agendamento interativo com grade horária dinâmica (filtrada por barbeiro e data) e atualização do resumo.
-  - Cadastro público restrito a clientes.
+  - Página inicial com serviços em destaque, galeria interativa de cortes, **Delacruz Reels**, **Delacruz Academy** e localização em Paranavaí - PR.
+  - Página institucional **Sobre** (`/sobre/`) com descrição do projeto e diagramas UML de Casos de Uso e Classes.
+  - Contato público armazenado em banco de dados e **Clube VIP** (`/clube/`) com planos de assinatura mensal.
+  - Fluxo de agendamento online (`/agendamento/`) com grade horária dinâmica, validação de conflito com buffer de 5 minutos, cupons/indicação e pagamento via PIX (EMV/QR Code).
+  - Cadastro público de clientes (`/cadastro/`) e autenticação completa com recuperação de **senha** e **nome de usuário** por e-mail na tela de login.
 
 - **Área do Cliente**:
-  - Acesso restrito a clientes autenticados.
-  - Visualização de dados do perfil de cliente.
-  - Histórico completo de atendimentos anteriores e status.
-  - Envio de feedback (avaliações de 1 a 5 estrelas e comentários) para serviços concluídos.
-  - Cancelamento de agendamentos pendentes.
+  - Acesso restrito via `ClienteRequiredMixin` / grupo `Clientes`.
+  - Carteirinha de Fidelidade Digital (10 selos), Clube VIP, código de indicação e acompanhamento de agendamentos.
+  - Histórico completo paginado, envio de avaliações (feedbacks) e cancelamento com confirmação modal.
 
 - **Área do Barbeiro**:
-  - Painel exclusivo do barbeiro logado.
-  - Acompanhamento da agenda pessoal com opção de Confirmar, Recusar ou Concluir agendamentos.
-  - Relatórios operacionais e financeiros (faturamento diário, mensal, média de avaliações e serviços mais realizados).
-  - Gestão e upload de fotos de trabalhos (cortes e barbas) exibidas na página inicial.
+  - Acesso restrito via `BarbeiroRequiredMixin` / `GroupRequiredMixin` (`Barbeiros`).
+  - Gestão da agenda, check-in, atendimento na cadeira, comanda de consumo de produtos, ficha técnica de clientes, bloqueios/folgas e galeria de fotos com lightbox.
+  - Relatórios operacionais e financeiros.
 
-- **Painel Administrativo (Dashboard)**:
-  - Visão operacional consolidada (métricas de faturamento, quantidade de atendimentos e pendências).
-  - CRUDs completos reutilizando `form.html` com Crispy Forms e Bootstrap 5.
-  - Acesso seguro limitado a administradores e equipe (`is_staff`).
+- **Painel Administrativo (Dashboard & CRUDs)**:
+  - Acesso restrito via `AdminRequiredMixin` / `GroupRequiredMixin` (`Administradores`).
+  - Isolamento de registros por usuário (`usuario` FK via `form_valid()` e `get_queryset()`).
+  - Framework de mensagens do Django em operações de Create, Update e Delete.
+  - Filtros avançados com **Django Filter** (`AgendamentoFilter`, `ServicoFilter`, `ClienteFilter`) integrados à paginação via template tag customizada `{% param_replace %}`.
+  - Páginas de erro HTTP customizadas (`400`, `403`, `404`, `500`) ativas com `DEBUG=False`.
+
+## Plugins jQuery Integrados
+
+1. **jQuery Mask Plugin**: máscaras de telefone/WhatsApp e CPF nos formulários.
+2. **jQuery DataTables**: ordenação e filtro rápido nas tabelas do sistema.
+3. **Bootbox.js**: modais de confirmação para ações de exclusão, cancelamento e remoção.
+4. **Magnific Popup**: galeria lightbox para ampliação de diagramas e fotos de trabalho.
 
 ## Tecnologias Utilizadas
 
-- **Backend**: Python 3.12, Django 6.0.6
-- **Frontend**: Bootstrap 5, Bootstrap Icons, Vanilla Javascript
-- **Formulários**: Django Crispy Forms, crispy-bootstrap5
-- **Manipulação de Imagens**: Pillow
-- **Banco de Dados**: SQLite
+- **Backend**: Python 3.12, Django 5.2, Django Filter, Django Crispy Forms (`crispy-bootstrap5`), Django Debug Toolbar
+- **Frontend**: Bootstrap 5, Bootstrap Icons, jQuery 3.7, jQuery Mask, DataTables, Bootbox.js, Magnific Popup
+- **Banco de Dados**: PostgreSQL (Neon Serverless DB via `DATABASE_URL`)
+- **Deploy**: Google App Engine (`app.yaml` + Gunicorn)
 
-## Instruções de Instalação e Execução
+## Instruções de Instalação e Execução Local
 
-1. **Clonar e acessar o repositório**:
+1. **Clonar o repositório**:
    ```bash
-   cd pw2k26
+   git clone <url-do-repositorio>
+   cd PW2026
    ```
 
 2. **Criar e ativar o ambiente virtual**:
@@ -59,22 +64,37 @@ Sistema completo de agendamento online e gerenciamento interno para a **Delacruz
    pip install -r requirements.txt
    ```
 
-4. **Gerar e aplicar as migrações**:
+4. **Configurar variáveis de ambiente**:
+   Configure `DATABASE_URL` no arquivo `.env` (consulte `.env.example`).
+
+5. **Aplicar migrações e sincronizar o catálogo oficial**:
    ```bash
-   python manage.py makemigrations
    python manage.py migrate
+   python manage.py seed_delacruz_real
    ```
 
-5. **Popular o banco de dados (Seeding)**:
+6. **Executar os testes automatizados**:
    ```bash
-   python manage.py seed
+   python manage.py test website --keepdb
    ```
 
-6. **Iniciar o servidor de desenvolvimento**:
+7. **Iniciar o servidor de desenvolvimento**:
    ```bash
    python manage.py runserver
    ```
-=======
-# pw2026
-sim.
->>>>>>> 98d4a58a6fde5f5e82afdb31fd156a36dc2040b9
+
+## Deploy no Google App Engine (GAE)
+
+1. Autentique-se na Google Cloud CLI:
+   ```bash
+   gcloud auth login
+   gcloud config set project pw2k26
+   ```
+2. Gere os arquivos estáticos em `staticfiles/`:
+   ```bash
+   python manage.py collectstatic --noinput
+   ```
+3. Realize o deploy:
+   ```bash
+   gcloud app deploy
+   ```

@@ -13,7 +13,7 @@ O objetivo deste sistema é automatizar a gestão de uma barbearia, facilitando 
 - Gerenciar contatos e feedbacks dos usuários.
 
 ## Tecnologias Utilizadas
-- **Backend**: Python 3.11+ / Django 4.x
+- **Backend**: Python 3.11+ / Django 5.2
 - **Frontend**: HTML5, CSS3 (Bootstrap 5), JavaScript (Vanilla/jQuery)
 - **Banco de Dados**: Relacional PostgreSQL (Neon DB em produção/desenvolvimento via `DATABASE_URL`)
 
