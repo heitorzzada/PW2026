@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView, ListView, DetailView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth.views import (
@@ -652,12 +652,12 @@ class FeedbackCreateView(ClienteRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        agendamento = Agendamento.objects.get(pk=self.kwargs["pk"])
+        agendamento = get_object_or_404(Agendamento, pk=self.kwargs["pk"])
         context["agendamento"] = agendamento
         return context
 
     def form_valid(self, form):
-        agendamento = Agendamento.objects.get(pk=self.kwargs["pk"])
+        agendamento = get_object_or_404(Agendamento, pk=self.kwargs["pk"])
         cliente = Cliente.objects.filter(usuario=self.request.user).first()
         
         if agendamento.cliente != cliente:

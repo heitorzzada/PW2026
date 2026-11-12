@@ -11,7 +11,9 @@
                     <h1 class="h2 text-white mb-4"><span class="text-gradient">Foto de Trabalho</span></h1>
                     
                     <div class="text-center mb-4" style="max-height: 400px; overflow: hidden;">
-                        <img src="{{ object.imagem.url }}" class="img-fluid rounded border border-secondary" alt="{{ object.titulo }}" style="max-height: 400px; object-fit: contain;">
+                        <a href="{{ object.imagem.url }}" class="image-popup-gallery" title="{{ object.titulo }}">
+                            <img src="{{ object.imagem.url }}" class="img-fluid rounded border border-secondary" alt="{{ object.titulo }}" style="max-height: 400px; object-fit: contain;">
+                        </a>
                     </div>
 
                     <div class="lh-lg text-secondary mb-4">

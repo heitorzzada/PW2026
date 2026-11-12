@@ -82,7 +82,7 @@
                                         </td>
                                         <td class="text-secondary">{{ b.motivo }}</td>
                                         <td>
-                                            <form method="POST" action="{% url 'excluir_bloqueio_barbeiro' b.id %}" onsubmit="return confirm('Deseja liberar este horário?');">
+                                            <form method="POST" action="{% url 'excluir_bloqueio_barbeiro' b.id %}" data-confirm="Deseja liberar este horário?">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Desbloquear">
                                                     <i class="bi bi-trash"></i> Liberar

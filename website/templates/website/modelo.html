@@ -10,7 +10,7 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'website/css/style.css' %}?v=3.3">
+    <link rel="stylesheet" href="{% static 'website/css/style.css' %}?v=3.4">
     <!-- DataTables Bootstrap 5 CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <!-- Plugin jQuery 4 CSS: Magnific Popup (Galeria de Fotos / Lightbox) -->
@@ -184,10 +184,18 @@
     <div class="container my-3">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-dismissible fade show alert-delacruz d-flex align-items-center gap-2" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
+                <div class="alert alert-dismissible fade show d-flex align-items-center gap-2 {% if 'error' in message.tags %}alert-danger{% elif 'warning' in message.tags %}alert-warning{% elif 'info' in message.tags %}alert-info{% else %}alert-delacruz{% endif %}" role="alert">
+                    {% if 'error' in message.tags %}
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    {% elif 'warning' in message.tags %}
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                    {% elif 'info' in message.tags %}
+                        <i class="bi bi-info-circle-fill"></i>
+                    {% else %}
+                        <i class="bi bi-check-circle-fill"></i>
+                    {% endif %}
                     <div>{{ message }}</div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close {% if not 'warning' in message.tags %}btn-close-white{% endif %}" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
         {% endif %}
@@ -419,7 +427,7 @@
     <!-- Plugin jQuery 4: Magnific Popup - Galeria de Fotos / Lightbox (Requisito 3º Trimestre) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
     <!-- Custom JS (com cache buster) -->
-    <script src="{% static 'website/js/main.js' %}?v=3.4"></script>
+    <script src="{% static 'website/js/main.js' %}?v=3.5"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

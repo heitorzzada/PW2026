@@ -14,7 +14,7 @@ $(document).ready(function () {
 
         $('.phone-mask, input[name="telefone"], #id_telefone').mask(phoneMaskBehavior, phoneOptions);
         $('.cpf-mask, #id_cpf').mask('000.000.000-00', {reverse: true});
-        $('.money-mask, #id_preco, #id_valor').mask('000.000,00', {reverse: true});
+        $('.money-mask:not([type="number"])').mask('000.000,00', {reverse: true});
     }
 
     // =========================================================
@@ -22,6 +22,9 @@ $(document).ready(function () {
     // =========================================================
     if ($.fn.DataTable) {
         $('.datatable-delacruz, .table-glass').each(function () {
+            if ($(this).find('tbody td[colspan]').length > 0) {
+                return;
+            }
             if (!$.fn.DataTable.isDataTable(this)) {
                 $(this).DataTable({
                     language: {
@@ -54,8 +57,11 @@ $(document).ready(function () {
     if (typeof bootbox !== "undefined") {
         // Intercepta botões de exclusão ou cancelamento com confirmação moderna em modal
         $(document).on("click", "a[href*='/excluir/'], .btn-confirm-action, a[href*='/cancelar/']", function (e) {
-            e.preventDefault();
             var targetUrl = $(this).attr("href");
+            if (!targetUrl) {
+                return;
+            }
+            e.preventDefault();
             var isCancel = targetUrl.indexOf("/cancelar/") !== -1;
             var actionTitle = isCancel ? "Confirmar Cancelamento" : "Confirmar Exclusão";
             var actionMsg = isCancel 
@@ -66,7 +72,7 @@ $(document).ready(function () {
 
             bootbox.confirm({
                 title: "<i class='bi bi-exclamation-triangle-fill text-warning me-2'></i> " + actionTitle,
-                message: "<p class='mb-0 text-secondary'>" + actionMsg + "</p>",
+                message: "<p class='mb-0 text-light'>" + actionMsg + "</p>",
                 buttons: {
                     cancel: {
                         label: "<i class='bi bi-arrow-left me-1'></i> Voltar",
@@ -84,25 +90,59 @@ $(document).ready(function () {
                 }
             });
         });
+
+        $(document).on("submit", "form[data-confirm]", function (e) {
+            var formEl = this;
+            if (formEl.dataset.confirmed === "true") {
+                return true;
+            }
+            e.preventDefault();
+            var confirmMsg = formEl.getAttribute("data-confirm") || "Deseja confirmar esta ação?";
+            bootbox.confirm({
+                title: "<i class='bi bi-exclamation-triangle-fill text-warning me-2'></i> Confirmar Ação",
+                message: "<p class='mb-0 text-light'>" + confirmMsg + "</p>",
+                buttons: {
+                    cancel: {
+                        label: "<i class='bi bi-arrow-left me-1'></i> Voltar",
+                        className: "btn-outline-secondary btn-sm"
+                    },
+                    confirm: {
+                        label: "<i class='bi bi-check-circle-fill me-1'></i> Confirmar",
+                        className: "btn-warning btn-sm"
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        formEl.dataset.confirmed = "true";
+                        formEl.submit();
+                    }
+                }
+            });
+        });
     }
 
     // =========================================================
     // PLUGIN JQUERY 4: JQUERY MAGNIFIC POPUP (Requisito 3º Trimestre)
     // =========================================================
     if ($.fn.magnificPopup) {
-        $('.image-popup-gallery, .gallery-lightbox, a[href*="diagrama-"], .hover-zoom').parent('a').magnificPopup({
+        var mfpConfig = {
             type: 'image',
             closeOnContentClick: true,
             mainClass: 'mfp-img-mobile mfp-fade',
             image: {
-                verticalFit: true
+                verticalFit: true,
+                titleSrc: function (item) {
+                    return item.el.attr('title') || '';
+                }
             },
             gallery: {
                 enabled: true,
                 navigateByImgClick: true,
                 preload: [0, 1]
             }
-        });
+        };
+        $('a.image-popup-gallery, a.gallery-lightbox, a[href*="diagrama-"]').magnificPopup(mfpConfig);
+        $('.hover-zoom').parent('a').magnificPopup(mfpConfig);
     }
 });
 

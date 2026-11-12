@@ -2209,6 +2209,24 @@ body.scroll-animations-active .reveal-zoom-in.is-revealed {
     }
 }
 
+/* Bootbox.js Dark Glassmorphism Styling */
+.bootbox .modal-content {
+    background: rgba(15, 23, 42, 0.96);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(253, 224, 71, 0.35);
+    color: #f8fafc;
+    border-radius: 16px;
+}
+
+.bootbox .modal-header,
+.bootbox .modal-footer {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.bootbox .bootbox-close-button {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
 
 
 

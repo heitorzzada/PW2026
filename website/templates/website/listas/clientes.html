@@ -18,21 +18,36 @@
         </div>
 
         <div class="card glass-card p-4">
-
-    <form method="get" class="mb-3">
-        <div class="input-group">
-            <input
-                type="text"
-                name="q"
-                class="form-control"
-                placeholder="Buscar cliente por nome ou e-mail..."
-                value="{{ request.GET.q|default:'' }}"
-            >
-            <button type="submit" class="btn btn-primary">
-                Buscar
-            </button>
-        </div>
-    </form>
+            <!-- Formulário com Django Filter (Requisito 3º Trimestre) -->
+            <form method="get" class="mb-4 p-3 bg-dark bg-opacity-50 rounded border border-secondary border-opacity-25">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="text-white mb-0"><i class="bi bi-funnel-fill text-warning me-1"></i> Filtros de Clientes (Django Filter)</h6>
+                    {% if request.GET.urlencode %}
+                        <a href="{% url 'listar_clientes' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Limpar Filtros
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small text-secondary mb-1">Nome</label>
+                        {{ filter.form.nome }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-secondary mb-1">Telefone</label>
+                        {{ filter.form.telefone }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-secondary mb-1">E-mail</label>
+                        {{ filter.form.email }}
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-delacruz btn-sm w-100 py-2" title="Aplicar Filtros">
+                            <i class="bi bi-filter"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
             <div class="table-responsive">
                 <table class="table table-hover table-glass w-100">
                     <thead>

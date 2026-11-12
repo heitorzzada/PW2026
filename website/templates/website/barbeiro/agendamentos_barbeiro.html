@@ -257,11 +257,11 @@
                                     <span class="fw-semibold text-white">{{ vp.quantidade }}x {{ vp.produto.nome }}</span>
                                     <small class="text-white-50 d-block">R$ {{ vp.valor_total }} (R$ {{ vp.produto.preco }} cada)</small>
                                 </div>
-                                <form method="POST" action="{% url 'adicionar_comanda' a.id %}" class="d-inline mb-0">
+                                <form method="POST" action="{% url 'adicionar_comanda' a.id %}" class="d-inline mb-0" data-confirm="Deseja remover este produto da comanda?">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="remover">
                                     <input type="hidden" name="venda_id" value="{{ vp.id }}">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Remover produto da comanda" onclick="return confirm('Deseja remover este produto da comanda?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Remover produto da comanda">
                                         <i class="bi bi-trash"></i> Remover
                                     </button>
                                 </form>
