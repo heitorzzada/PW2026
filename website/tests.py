@@ -359,3 +359,120 @@ class Trimestre3RequirementsTestCase(TestCase):
         self.assertEqual(resp_user_post.status_code, 302)
 
 
+    def test_cliente_and_agendamento_filter_and_pagination_preserve_params(self):
+        # Cria 12 clientes com mesmo prefixo para forçar paginação (paginate_by = 10)
+        for i in range(12):
+            Cliente.objects.create(
+                usuario=self.user,
+                nome=f"Cliente Filtrado {i:02d}",
+                telefone=f"(44) 99999-00{i:02d}",
+                email=f"filtrado{i}@delacruz.com",
+            )
+        Cliente.objects.create(
+            usuario=self.user,
+            nome="Outro Registro",
+            telefone="(44) 98888-7777",
+            email="outro@delacruz.com",
+        )
+
+        # Página 1 com filtro por nome -> deve conter form de filtro e link para page=2 preservando nome=Filtrado
+        resp_p1 = self.client.get(reverse("listar_clientes"), {"nome": "Filtrado"})
+        self.assertEqual(resp_p1.status_code, 200)
+        self.assertIn("filter", resp_p1.context)
+        self.assertContains(resp_p1, "Filtros de Clientes")
+        self.assertEqual(len(resp_p1.context["clientes"]), 10)
+        self.assertContains(resp_p1, "nome=Filtrado")
+        self.assertContains(resp_p1, "page=2")
+
+        # Página 2 com filtro preservado -> deve trazer os 2 restantes
+        resp_p2 = self.client.get(reverse("listar_clientes"), {"nome": "Filtrado", "page": 2})
+        self.assertEqual(resp_p2.status_code, 200)
+        self.assertEqual(len(resp_p2.context["clientes"]), 2)
+
+        # AgendamentoFilter
+        cliente = Cliente.objects.filter(usuario=self.user).first()
+        servico = Servico.objects.create(
+            usuario=self.user, nome="Corte Filtro", preco=Decimal("30.00"), duracao_minutos=30
+        )
+        barbeiro = Barbeiro.objects.create(
+            usuario=self.user, nome="Barbeiro Filtro", cargo="Barbeiro",
+            especialidade="Degradê", descricao_curta="Teste"
+        )
+        ag_conf = Agendamento.objects.create(
+            usuario=self.user, cliente=cliente, servico=servico, barbeiro=barbeiro,
+            data=date(2026, 11, 20), horario=time(10, 0), status="confirmado"
+        )
+        ag_pend = Agendamento.objects.create(
+            usuario=self.user, cliente=cliente, servico=servico, barbeiro=barbeiro,
+            data=date(2026, 11, 21), horario=time(11, 0), status="pendente"
+        )
+        resp_ag = self.client.get(reverse("listar_agendamentos"), {"status": "confirmado"})
+        self.assertEqual(resp_ag.status_code, 200)
+        self.assertIn(ag_conf, resp_ag.context["agendamentos"])
+        self.assertNotIn(ag_pend, resp_ag.context["agendamentos"])
+
+    def test_django_messages_on_create_update_delete(self):
+        # Create
+        resp_create = self.client.post(reverse("cadastrar_servico"), {
+            "nome": "Serviço Mensagem",
+            "descricao": "Teste de mensagem",
+            "preco": "40.00",
+            "duracao_minutos": 30,
+            "categoria": "Corte",
+            "icone": "scissors",
+            "ativo": True,
+            "destaque": False,
+            "ordem": 1,
+        }, follow=True)
+        self.assertEqual(resp_create.status_code, 200)
+        self.assertContains(resp_create, "Serviço cadastrado com sucesso!")
+
+        servico = Servico.objects.get(nome="Serviço Mensagem", usuario=self.user)
+
+        # Update
+        resp_update = self.client.post(reverse("editar_servico", args=[servico.pk]), {
+            "nome": "Serviço Mensagem Editado",
+            "descricao": "Editado",
+            "preco": "45.00",
+            "duracao_minutos": 30,
+            "categoria": "Corte",
+            "icone": "scissors",
+            "ativo": True,
+            "destaque": False,
+            "ordem": 1,
+        }, follow=True)
+        self.assertEqual(resp_update.status_code, 200)
+        self.assertContains(resp_update, "Serviço atualizado com sucesso!")
+
+        # Delete
+        resp_delete = self.client.post(reverse("excluir_servico", args=[servico.pk]), follow=True)
+        self.assertEqual(resp_delete.status_code, 200)
+        self.assertContains(resp_delete, "Serviço excluído com sucesso!")
+
+    def test_login_links_and_email_outbox_for_recovery(self):
+        from django.core import mail
+
+        anon_client = Client()
+        resp_login = anon_client.get(reverse("login"))
+        self.assertEqual(resp_login.status_code, 200)
+        self.assertContains(resp_login, reverse("password_reset"))
+        self.assertContains(resp_login, reverse("recuperar_usuario"))
+
+        # Password reset sends email
+        mail.outbox = []
+        resp_pw_post = anon_client.post(reverse("password_reset"), {"email": "admin_test@delacruz.com"})
+        self.assertEqual(resp_pw_post.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Redefinição de Senha", mail.outbox[0].subject)
+
+        # Username recovery sends email with username
+        mail.outbox = []
+        resp_user_post = anon_client.post(reverse("recuperar_usuario"), {"email": "admin_test@delacruz.com"})
+        self.assertEqual(resp_user_post.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("admin_test", mail.outbox[0].body)
+
+    def test_custom_error_pages_preview(self):
+        for code in (400, 403, 404, 500):
+            resp = self.client.get(reverse(f"erros:erro_{code}"))
+            self.assertEqual(resp.status_code, code)
